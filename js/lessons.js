@@ -47,8 +47,8 @@ const L1 = {
     await setEq('3 × 4 = <span class=b>12</span>');
     await slideTo(ids('q',0,12), 120, 408, 18);
     const rod = await cubesToRod(ids('q',0,10), 120, 300, 'qr');
-    await slideTo(ids('q',10,12), 160, 408);
-    await tags([['십막대 1개', 80, 440], ['낱개 2개', 200, 440]]);
+    await slideTo(ids('q',10,12), 240, 408);
+    await tags([['십막대 1개', [rod], 440], ['낱개 2개', ids('q',10,12), 440]]);
     await rowLbl('vl0', PR[0], '3×4', 'b');
     await pvW(0, 1, '1'); await pvW(0, 0, '2');
   },
@@ -59,14 +59,14 @@ const L1 = {
     const rs = [];
     for (let i=0;i<12;i++){ const g = Math.floor(i/3), k = i%3; rs.push(blk('rod', 80+g*150+k*18, 300, 'tr'+i)); }
     SFX.pop(); await popIn(rs, 50);
-    await tag('십막대 12개', 280, 440);
+    await tag('십막대 12개', rs, 440);
   },
   async()=>{
     say(`십막대 10개는 <b>백판 1개</b>! 백판 1개, 십막대 2개 = <b>120</b>. 3 × 4 = 12였는데, 숫자가 <b>한 칸 왼쪽으로 점프</b>하고 0이 붙었어!`);
     await tagsRm();
     await rodsToFlat(ids('tr',0,10), 80, 300, 'tf');
-    await slideTo(ids('tr',10,12), 240, 300, 18);
-    await tags([['백판 1개 = 100', 70, 440], ['십막대 2개 = 20', 222, 440]]);
+    await slideTo(ids('tr',10,12), 300, 300, 18);
+    await tags([['백판 1개 = 100', [$('tf')], 440], ['십막대 2개 = 20', ids('tr',10,12), 440]]);
     await setEq('30 × 4 = <span class=g>120</span>');
     await rowLbl('vl1', PR[1], '30×4', 'g');
     await jump('v0p1', 'v1p2', 2, PR[1], 'g'); await jump('v0p0', 'v1p1', 1, PR[1], 'g');
@@ -79,12 +79,12 @@ const L1 = {
     const r = [blk('rod', 100, 300, 'zr0'), blk('rod', 118, 300, 'zr1')];
     const c = [0,1,2,3].map(k=>blk('cube', 150+k*18, 408, 'zc'+k));
     SFX.pop(); await popIn([...r, ...c], 60);
-    await tag('24 = 십막대 2개 + 낱개 4개', 80, 440);
+    await tag('24 = 십막대 2개 + 낱개 4개', [...r, ...c], 440);
     await rowLbl('vl2', PR[2], '24', 'b');
     await pvW(2, 1, '2'); await pvW(2, 0, '4');
     await wait(400); await tagsRm();
     await all([growTo(r[0], 'flat', 80, 300), growTo(r[1], 'flat', 210, 300), ...c.map((e,k)=>growTo(e, 'rod', 360+k*18, 300))]);
-    await tag('백판 2개 + 십막대 4개 = 240', 80, 440);
+    await tag('백판 2개 + 십막대 4개 = 240', [...r, ...c], 440);
     await setEq('24 × 10 = <span class=g>240</span>');
     await rowLbl('vl3', PR[3], '24×10', 'g');
     await jump('v2p1', 'v3p2', 2, PR[3], 'g'); await jump('v2p0', 'v3p1', 1, PR[3], 'g');
@@ -154,9 +154,9 @@ const L2 = {
   async()=>{
     say(`두 번째 섬, <b>십막대 섬</b>! 구슬이 한 봉지에 <b>23개씩</b>, <b>30봉지</b> 있대. 모두 몇 개일까?`);
     await setEq('23 × 30 = ?');
-    const g = [blk('rod', 100, 300, 'o0'), blk('rod', 118, 300, 'o1'), ...[0,1,2].map(k=>blk('cube', 150+k*18, 408, 'oc'+k))];
+    const g = [blk('rod', 330, 300, 'o0'), blk('rod', 348, 300, 'o1'), ...[0,1,2].map(k=>blk('cube', 380+k*18, 408, 'oc'+k))];
     SFX.pop(); await popIn(g, 60);
-    await tag('구슬 23개 = 십막대 2개 + 낱개 3개', 70, 440);
+    await tag('구슬 23개 = 십막대 2개 + 낱개 3개', g, 440);
   },
   async()=>{
     say(`30봉지는 너무 많아! 먼저 <b>3봉지</b>만 생각해 보자. <b>23 × 3</b>은?`);
@@ -172,7 +172,7 @@ const L2 = {
     await wait(500);
     await slideTo(ids('m',0,6), 100, 300, 18);
     await slideTo(ids('n',0,9), 240, 408, 18);
-    await tags([['십막대 6개', 80, 440], ['낱개 9개', 260, 440]]);
+    await tags([['십막대 6개', ids('m',0,6), 440], ['낱개 9개', ids('n',0,9), 440]]);
     await setEq('23 × 3 = <span class=b>69</span>');
   },
   async()=>{
@@ -183,7 +183,7 @@ const L2 = {
       ...rods.map((e,i)=>growTo(e, 'flat', 70+(i%3)*128, 214+Math.floor(i/3)*128)),
       ...cubes.map((e,i)=>growTo(e, 'rod', 470+i*18, 214)),
     ]);
-    await tags([['백판 6개 = 600', 140, 480], ['십막대 9개 = 90', 470, 350]]);
+    await tags([['백판 6개 = 600', rods, 480], ['십막대 9개 = 90', cubes, 350]]);
     await setEq('23 × 30 = 23 × 3 × 10 = <span class=g>690</span>');
   },
   async()=>{
@@ -225,7 +225,7 @@ const L2 = {
     const cs = [];
     for (let i=0;i<144;i++){ const r = Math.floor(i/24), c = i%24; cs.push(blk('cube', 80+c*14, 220+r*14, 'x'+i)); }
     SFX.pop(); await popIn(cs, 4, 200);
-    await tag('6줄 × 24개', 80, 320);
+    await tag('6줄 × 24개', cs, 320);
     await wait(500); await tagsRm(); SFX.swoosh();
     await all(cs.map((e,i)=>{ const r = Math.floor(i/24), c = i%24; return A(e, {left:(80+r*14)+'px', top:(220+c*14)+'px'}, 900, {delay:c*12}); }));
     await tag('24줄 × 6개 — 개수는 똑같이 144개!', 200, 400);
@@ -287,8 +287,8 @@ const L3 = {
     SFX.pop(); await popIn(els, 50);
     await wait(400);
     await slideTo(ids('rr',0,3), 100, 300, 18);
-    await slideTo(ids('cc',0,6), 200, 408, 18);
-    await tags([['십막대 3개 = 30', 70, 440], ['낱개 6개 = 6', 236, 440]]);
+    await slideTo(ids('cc',0,6), 240, 408, 18);
+    await tags([['십막대 3개 = 30', ids('rr',0,3), 440], ['낱개 6개 = 6', ids('cc',0,6), 440]]);
     await setEq('12 × 3 = <span class=b>36</span>');
   },
   async()=>{
@@ -310,7 +310,7 @@ const L3 = {
     SFX.pop(); await popIn([r, ...c], 80);
     await wait(400);
     await all([growTo(r, 'flat', 80, 300), growTo(c[0], 'rod', 230, 300), growTo(c[1], 'rod', 248, 300)]);
-    await tag('백판 1개 + 십막대 2개 = 120', 70, 440);
+    await tag('백판 1개 + 십막대 2개 = 120', [r, ...c], 440);
     await setEq('12 × 10 = <span class=g>120</span>');
     await zeroDrop('r2p0', 0, LY.r2);
     await writeDigit('r2p1', 1, LY.r2, '2', 'g'); await writeDigit('r2p2', 2, LY.r2, '1', 'g');
@@ -336,10 +336,10 @@ const L3 = {
     const r = mk('mini', 430, 160, `36<br><span class=g>120</span><br><span style="border-top:4px solid #2A2A3C;display:inline-block;width:100%" class=s>156</span>`); css(r, {width:'130px', fontSize:'52px'});
     await showEl(w);
     const x = mk('bigx', 180, 420, '✗'); x.style.opacity = 0; SFX.wrong(); await A(x, POP, 400);
-    await tag('0을 안 써서 자리가 밀렸어!', 60, 560);
+    await tag('0을 안 써서 자리가 밀렸어!', [w], 560);
     await showEl(r);
     const o = mk('bigo', 500, 420, '○'); o.style.opacity = 0; SFX.right(); await A(o, POP, 400);
-    await tag('0을 먼저 쓰면 자리가 딱!', 400, 560);
+    await tag('0을 먼저 쓰면 자리가 딱!', [r], 560);
   },
   async()=>{
     say(`<b>한눈에 정리!</b> 파란 조각 <b class=b>36</b>, 초록 조각 <b class=g>120</b>, 합치면 <b class=s>156</b>. 그림도, 식도, 세로셈도 모두 <b>같은 이야기</b>야.`);
@@ -414,7 +414,7 @@ const L4 = {
     const cs = [];
     for (let i=0;i<63;i++) cs.push(blk('cube', 80+(i%9)*16, 300+Math.floor(i/9)*16, 'c'+i));
     SFX.pop(); await popIn(cs, 12, 260);
-    await tag('9개씩 7줄 = 낱개 63개', 70, 428);
+    await tag('9개씩 7줄 = 낱개 63개', cs, 428);
   },
   async()=>{
     say(`낱개가 <b>10개</b> 모이면 <b>십막대 1개</b>로 바꿀 수 있어. 10개씩 묶어 보자!`);
@@ -422,7 +422,7 @@ const L4 = {
     for (let g=0; g<6; g++) await cubesToRod(ids('c', g*10, g*10+10), 320+g*20, 300, 'rd'+g);
     await slideTo(ids('c', 60, 63), 520, 408);
     await setEq('63 = <span class=b>60</span> + <span class=b>3</span>');
-    await tags([['십막대 6개 = 60', 296, 438], ['낱개 3개 = 3', 494, 438]]);
+    await tags([['십막대 6개 = 60', ids('rd',0,6), 438], ['낱개 3개 = 3', ids('c',60,63), 438]]);
   },
   async()=>{
     say(`낱개 <b>3</b>은 일의 자리에 쓰고, 십막대 <b>6개</b>는 십의 자리로 <b class=r>받아올려!</b> 빨간 숫자로 작게 써 두는 거야.`);
@@ -445,7 +445,7 @@ const L4 = {
     await wait(300); SFX.ppyong();
     await all([0,1,2,3,4,5].map(k=>emerge('rod', 't'+(21+k), CX[1]-6, LY.k1-60, 530+k*16, 300, k*90)));
     await setEq('21 + <span class=r>6</span> = 27');
-    await tag('십막대 모두 27개', 268, 440);
+    await tag('십막대 모두 27개', ids('t',0,27), 440);
   },
   async()=>{
     say(`십막대 <b>10개</b>는 <b>백판 1개</b>! 백판 2개, 십막대 7개가 돼. <b>7</b>은 십의 자리, <b>2</b>는 백의 자리에 쓰자.`);
@@ -454,7 +454,7 @@ const L4 = {
     const f2 = await rodsToFlat(ids('t', 10, 20), 220, 300, 'f2');
     const left = ids('t', 20, 27);
     await slideTo(left, 380, 300);
-    await tags([['백판 2개 = 200', 96, 440], ['십막대 7개 = 70', 354, 440]]);
+    await tags([['백판 2개 = 200', [f1, f2], 440], ['십막대 7개 = 70', left, 440]]);
     await wait(900); await tagsRm();
     await flyTo(left, CX[1], LY.r1); await writeDigit('r1p1', 1, LY.r1, '7', 'b');
     await flyTo([f1, f2], CX[2], LY.r1); await writeDigit('r1p2', 2, LY.r1, '2', 'b');
@@ -486,7 +486,7 @@ const L4 = {
     const fl = await rodsToFlat(ids('u', 0, 10), 80, 300, 'uf');
     const left = ids('u', 10, 18);
     await slideTo(left, 240, 300);
-    await tags([['백판 1개', 92, 440], ['십막대 8개', 270, 440]]);
+    await tags([['백판 1개', [fl], 440], ['십막대 8개', left, 440]]);
     await wait(700); await tagsRm();
     await flyTo(left, CX[1], LY.r2); await writeDigit('r2p1', 1, LY.r2, '8', 'g');
     redden([fl]); await wait(300);
@@ -504,7 +504,7 @@ const L4 = {
     await wait(250);
     SFX.ppyong(); const rf = await emerge('flat', 'v6', CX[1]-60, LY.k2-60, 480, 280);
     await setEq('6 + <span class=r>1</span> = 7');
-    await tag('백판 모두 7개', 480, 420);
+    await tag('백판 모두 7개', [rf], 420);
     await wait(800); await tagsRm();
     await flyTo([...fs, rf], CX[2], LY.r2, 800, 40); await writeDigit('r2p2', 2, LY.r2, '7', 'g');
     clearHl();
@@ -529,12 +529,12 @@ const L4 = {
     const rs = [];
     for (let i=0;i<15;i++) rs.push(blk('rod', i<7 ? 80+i*16 : 222+(i-7)*16, 300, 'w'+i));
     SFX.pop(); await popIn(rs, 35);
-    await tags([['7개', 104, 440], ['8개', 262, 440]]);
+    await tags([['7개', ids('w',0,7), 440], ['8개', ids('w',7,15), 440]]);
     await wait(500); await tagsRm();
     const fl = await rodsToFlat(ids('w', 0, 10), 80, 300, 'wf');
     const left = ids('w', 10, 15);
     await slideTo(left, 240, 300);
-    await tags([['백판 1개', 92, 440], ['십막대 5개', 236, 440]]);
+    await tags([['백판 1개', [fl], 440], ['십막대 5개', left, 440]]);
     await wait(600); await tagsRm();
     await flyTo(left, CX[1], LY.S); await writeDigit('sp1', 1, LY.S, '5', 's');
     redden([fl]); await wait(300);
@@ -558,7 +558,7 @@ const L4 = {
     const cube = blk('thou', 285, 300, 'cube'); cube.style.opacity = 1;
     SFX.boom(); burst(360, 375, '#FF8A3D', 18);
     await A(cube, FLASH, 400);
-    await tag('천 모형 1개 = 1000', 262, 470);
+    await tag('천 모형 1개 = 1000', [cube], 470);
     await writeDigit('sp2', 2, LY.S, '0', 's');
     await wait(500); await tagsRm();
     redden([cube]); await wait(300);

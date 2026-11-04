@@ -112,7 +112,16 @@ async function setEq(html, x=240, y=110, w=510){
 }
 async function fadeRm(els, dur=250){ els = els.filter(Boolean); await all(els.map(e=>A(e,{opacity:'0'},dur))); els.forEach(e=>e.remove()); }
 const tagsRm = () => fadeRm([...fx.querySelectorAll('.tag')]);
-async function tag(txt, x, y, id){ const t = mk('tag', x, y, txt, id); t.style.opacity = 0; await A(t, IN, 300); return t; }
+// x: 왼쪽 좌표(숫자) 또는 블록 배열 → 블록 묶음의 가운데에 맞춰 놓기
+async function tag(txt, x, y, id){
+  const t = mk('tag', 0, y, txt, id); t.style.opacity = 0;
+  if (Array.isArray(x)){
+    const els = x.filter(Boolean);
+    const L = Math.min(...els.map(e=>parseFloat(e.style.left))), R = Math.max(...els.map(e=>parseFloat(e.style.left)+e.offsetWidth));
+    t.style.left = ((L+R)/2 - t.offsetWidth/2) + 'px';
+  } else t.style.left = x + 'px';
+  await A(t, IN, 300); return t;
+}
 async function tags(list){ await all(list.map(([t,x,y])=>tag(t,x,y))); }
 async function showEl(e, dur=400){ e.style.opacity = 0; await A(e, IN, dur); return e; }
 
