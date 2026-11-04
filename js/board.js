@@ -2,14 +2,26 @@
    board.js — 공책 보드 (칸 · 세로셈 쓰기 · 풀이 모션 · 펜)
    보드 안 좌표는 왼쪽 패널 기준 (패널 = 740 × 565)
    ========================================================= */
-const BX = p => 92 + 68*(6-p);           // p: 0=일 1=십 2=백 3=천
-const BY = {k2:25, k1:59, A:110, B:178, L1:212, ac:224, r1:246, r2:314, L2:348, S:382};
+/* 하나의 기준선: 칸 크기(CELL)와 시작점(GX0, GY0)만으로 격자선·숫자·네모를 모두 계산한다.
+   격자를 CSS 배경 반복에 맡기면 확대 비율에 따라 숫자와 1~5px 어긋날 수 있어서, 같은 숫자로 SVG 선을 직접 그린다. */
+const CELL = 68, GX0 = 58, GY0 = 8;
+const cellCX = k => GX0 + CELL*k + CELL/2;          // k번째 열의 가운데
+const cellCY = j => GY0 + CELL*j + CELL/2;          // j번째 행의 가운데
+const lineY  = j => GY0 + CELL*j;                   // j번째 가로선
+const BX = p => cellCX(6-p);                        // p: 0=일 1=십 2=백 3=천  (열 6 = 일의 자리)
+const BY = {k2:GY0+CELL/4, k1:GY0+CELL*3/4, A:cellCY(1), B:cellCY(2), L1:lineY(3), ac:lineY(3)+12, r1:cellCY(3), r2:cellCY(4), L2:lineY(5), S:cellCY(5)};
+function gridSVG(){
+  let h = '';
+  for (let x = GX0; x <= 740; x += CELL) h += `<line x1="${x}" y1="0" x2="${x}" y2="565"/>`;
+  for (let y = GY0; y <= 565; y += CELL) h += `<line x1="0" y1="${y}" x2="740" y2="${y}"/>`;
+  return `<svg width="740" height="565" viewBox="0 0 740 565" style="position:absolute;left:0;top:0"><g stroke="#D7E6F7" stroke-width="2">${h}</g></svg>`;
+}
 
 class Board {
   constructor(opts={}){
     this.opts = opts;
     const el = this.el = mk('panel pL board'+(opts.pen===false?' penoff':''), null, null, '', null, screenEl);
-    mk('grid', null, null, '', null, el);
+    mk('grid', null, null, gridSVG(), null, el);
     if (opts.note) mk('bnote', null, null, opts.note, null, el);
     this.layer = mk('layer', null, null, '', null, el);
     if (opts.pen !== false) this.initPen();

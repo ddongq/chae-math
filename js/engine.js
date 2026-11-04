@@ -143,7 +143,11 @@ function say(html){
 // 버튼 칸 너비만큼 말풍선을 줄여서 겹치지 않게
 function setCtrls(...els){
   const c = $('ctrls'); c.innerHTML = ''; els.filter(Boolean).forEach(e=>c.appendChild(e));
-  const w = c.children.length ? c.offsetWidth : 0;
+  layoutBottom();
+}
+// 버튼 글자가 바뀌어 폭이 달라졌을 때도 다시 맞추기
+function layoutBottom(){
+  const c = $('ctrls'), w = c.children.length ? c.offsetWidth : 0;
   $('bubble').style.width = (1220 - 135 - (w ? w + 24 : 0)) + 'px';
   fitBubble();
 }

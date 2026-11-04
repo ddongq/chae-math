@@ -71,7 +71,7 @@ body:not(.lesson-mode) .lt{display:none}
 /* ---------- 움직이는 것들 ---------- */
 #fx{position:absolute;left:0;top:0;width:1280px;height:800px;z-index:2;pointer-events:none}
 #fx > *, .layer > *{position:absolute}
-.dg{width:70px;height:80px;margin:-40px 0 0 -35px;text-align:center;font-size:64px;line-height:80px;font-weight:800;border-radius:16px;z-index:3;transition:background .3s,box-shadow .3s;font-variant-numeric:tabular-nums}
+.dg{width:70px;height:70px;margin:-35px 0 0 -35px;text-align:center;font-size:62px;line-height:70px;font-weight:800;border-radius:16px;z-index:3;transition:background .3s,box-shadow .3s;font-variant-numeric:tabular-nums}
 .dg.op{font-size:54px;color:#777}
 .dg.ghost{color:#B9B9C6}
 .cr{width:36px;height:36px;margin:-18px 0 0 -18px;font-size:30px;line-height:36px;color:var(--red);font-weight:800;text-align:center;border-radius:10px;z-index:3;transition:background .3s,box-shadow .3s}
@@ -132,14 +132,13 @@ body:not(.lesson-mode) .lt{display:none}
 
 /* ---------- 공책 보드 ---------- */
 .board{overflow:hidden}
-.board .grid{position:absolute;inset:0;border-radius:28px;
-  background-image:linear-gradient(to right,#D7E6F7 2px,transparent 2px),linear-gradient(to bottom,#D7E6F7 2px,transparent 2px);
-  background-size:68px 68px;background-position:58px 8px}
+.board .grid{position:absolute;inset:0;border-radius:28px;overflow:hidden}
 .board .layer{position:absolute;inset:0}
 .board canvas{position:absolute;left:0;top:0;width:740px;height:565px;touch-action:none;z-index:8}
 .board.penoff canvas{pointer-events:none}
-.bd{width:68px;height:68px;margin:-34px 0 0 -34px;text-align:center;font-size:54px;line-height:68px;font-weight:800;border-radius:12px;font-variant-numeric:tabular-nums;transition:background .3s,box-shadow .3s}
-.bd.op{color:#888;font-size:46px}
+/* 칸(68) 안에 사방 5px 여백을 두고 가운데 놓는 네모(58) */
+.bd{width:58px;height:58px;margin:-29px 0 0 -29px;text-align:center;font-size:50px;line-height:58px;font-weight:800;border-radius:12px;font-variant-numeric:tabular-nums;transition:background .3s,box-shadow .3s}
+.bd.op{color:#888;font-size:42px}
 .bd.ask{box-shadow:inset 0 0 0 4px #E2A400;background:#FFF5CC;animation:askp 1s ease-in-out infinite}
 @keyframes askp{50%{box-shadow:inset 0 0 0 4px #E2A400,0 0 0 6px rgba(226,164,0,.25)}}
 .bk{width:30px;height:28px;margin:-14px 0 0 -15px;text-align:center;font-size:24px;line-height:28px;font-weight:800;color:var(--red);border-radius:8px}

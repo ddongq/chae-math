@@ -49,6 +49,7 @@ function lUI(){
   const nx = $('lNext');
   nx.textContent = last ? (L.endLabel || '따라 풀기 ▶') : '다음 ▶';
   nx.classList.toggle('nudge', !LP.busy && !LP.auto);
+  layoutBottom();
   $('tip').innerHTML = `<i>💬 부모님이 이렇게 물어봐 주세요 (${LP.cur+1}/${L.steps.length}단계)</i>${(L.tips||[])[LP.cur]||''}`;
 }
 $('bTip').onclick = ()=>{ $('tip').classList.toggle('show'); $('bTip').classList.toggle('on'); };

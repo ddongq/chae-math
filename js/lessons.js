@@ -76,8 +76,8 @@ const L1 = {
     say(`<b>× 10의 비밀!</b> 10을 곱하면 낱개는 십막대로, 십막대는 백판으로 변신해. 그래서 숫자들이 <b>한 칸씩 왼쪽</b>으로 점프하고, 일의 자리엔 <b>0</b>!`);
     await wsClear();
     await setEq('24 × 10 = ?');
-    const r = [blk('rod', 100, 300, 'zr0'), blk('rod', 118, 300, 'zr1')];
-    const c = [0,1,2,3].map(k=>blk('cube', 150+k*18, 408, 'zc'+k));
+    const r = [blk('rod', 300, 300, 'zr0'), blk('rod', 318, 300, 'zr1')];
+    const c = [0,1,2,3].map(k=>blk('cube', 350+k*18, 408, 'zc'+k));
     SFX.pop(); await popIn([...r, ...c], 60);
     await tag('24 = 십막대 2개 + 낱개 4개', [...r, ...c], 440);
     await rowLbl('vl2', PR[2], '24', 'b');
@@ -102,7 +102,7 @@ const L1 = {
     for (let i=0;i<6;i++){
       const f = blk('flat', 122+(i%2)*120, 202+Math.floor(i/2)*120, 'hf'+i); fs.push(f);
       SFX.pop(); await A(f, POP, 300);
-      const n = mk('tag ws', 122+(i%2)*120+40, 202+Math.floor(i/2)*120+38, String(i+1)); await A(n, IN, 150);
+      const n = mk('tag ws cnt', 122+(i%2)*120+40, 202+Math.floor(i/2)*120+38, String(i+1)); await A(n, IN, 150);
     }
     await tag('백판 6장 = 600', 420, 320);
     await setEq('2 × 3 = 6 → <span class=g>600</span>', 400, 110, 350);
