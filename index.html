@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="곱셈 섬 탐험">
+<meta name="theme-color" content="#FFD7A8">
+<title>곱셈 섬 탐험</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="rotate"><div style="font-size:80px">🔄</div>아이패드를 가로로 돌려 주세요</div>
+
+<div id="stage">
+  <div id="screen"></div>
+  <div id="fx"></div>
+
+  <div id="header">
+    <button class="hbtn" id="bMap">🗺 지도</button>
+    <div id="title"></div>
+    <div id="tabs"></div>
+    <div id="dots"></div>
+    <div id="htools">
+      <button class="hbtn lt" id="bTip">💬 부모님 질문</button>
+      <button class="hbtn lt" id="bSpeed">🙂 보통</button>
+      <button class="hbtn lt" id="bAuto">자동 넘김</button>
+      <button class="hbtn" id="bSound">🔊</button>
+    </div>
+  </div>
+  <div id="tip"></div>
+
+  <div id="bottom">
+    <div id="parrot"></div>
+    <div id="pname">셈이</div>
+    <div id="bubble"></div>
+    <div id="ctrls"></div>
+  </div>
+
+  <div id="ov"></div>
+
+  <div id="start">
+    <div id="startParrot"></div>
+    <h1 id="startTitle"></h1>
+    <h2>곱셈 바다의 섬 6개를 탐험하며 (두 자리 수) × (두 자리 수)를 정복해요</h2>
+    <p id="startMsg"></p>
+    <button id="go">탐험 시작!</button>
+    <button id="rename">이름 바꾸기</button>
+  </div>
+</div>
+
+<script src="js/engine.js"></script>
+<script src="js/math.js"></script>
+<script src="js/board.js"></script>
+<script src="js/lesson.js"></script>
+<script src="js/lessons.js"></script>
+<script src="js/practice.js"></script>
+<script src="js/apply.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
