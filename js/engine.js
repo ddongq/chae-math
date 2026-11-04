@@ -123,14 +123,30 @@ const fmt = n => n.toLocaleString('ko-KR');
 // 숫자 뒤 조사: J(6,'은','는') → '은'  (받침 있는 숫자: 0 1 3 6 7 8)
 const J = (n, a, b) => { const d = String(n).replace(/[^0-9]/g,''); return '013678'.includes(d[d.length-1]) ? a : b; };
 
+// 말풍선: 한 문장이 끝나면 줄바꿈 + 넘치면 글자 크기 자동 축소
+function breakSentences(h){
+  return h.replace(/([.!?…])((?:<\/[a-z]+>)*)\s+(?=[^\s<]|<(?!br))/g, (m, p, tags) => p + tags + '<br>');
+}
+function fitBubble(){
+  const b = $('bubble'), inner = b.firstElementChild; if (!inner) return;
+  let fs = 23; b.style.fontSize = fs+'px';
+  while (inner.scrollHeight > b.clientHeight - 18 && fs > 16){ fs--; b.style.fontSize = fs+'px'; }
+}
 function say(html){
-  $('bubble').innerHTML = '<div>'+html.replace(/\{n\}/g, NM())+'</div>';
+  $('bubble').innerHTML = '<div>'+breakSentences(html.replace(/\{n\}/g, NM()))+'</div>';
+  fitBubble();
   if (!INSTANT){
     $('bubble').animate([{transform:'scale(.97)',opacity:.4},{transform:'scale(1)',opacity:1}],{duration:260});
     const p = $('parrot'); p.classList.remove('talk'); void p.offsetWidth; p.classList.add('talk');
   }
 }
-function setCtrls(...els){ const c = $('ctrls'); c.innerHTML = ''; els.filter(Boolean).forEach(e=>c.appendChild(e)); }
+// 버튼 칸 너비만큼 말풍선을 줄여서 겹치지 않게
+function setCtrls(...els){
+  const c = $('ctrls'); c.innerHTML = ''; els.filter(Boolean).forEach(e=>c.appendChild(e));
+  const w = c.children.length ? c.offsetWidth : 0;
+  $('bubble').style.width = (1220 - 135 - (w ? w + 24 : 0)) + 'px';
+  fitBubble();
+}
 async function pulse(el, s=1.14, dur=520){ await A(el, [{transform:'scale(1)'},{transform:`scale(${s})`},{transform:'scale(1)'}], dur); }
 function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
 

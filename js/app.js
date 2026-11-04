@@ -119,7 +119,13 @@ async function openTreasure(n){
     const c = mk('', null, null, '🔒', null, pf); css(c, {position:'absolute', left:'0', width:'1220px', top:'170px', textAlign:'center', fontSize:'150px'});
     return;
   }
-  const wrap = mk('ovbg', null, null, `
+  // 아직 안 연 상자: 왼쪽에 계산 공간(공책 보드), 오른쪽에 상자
+  const side = !isl.treasure;
+  if (side){
+    const bd = new Board({pen:true, note: n<6 ? '✏️ 미션 문제를 여기서 풀어 봐요' : '✏️ 숫자카드 2, 5, 7, 9로 곱을 만들어 계산해 봐요'});
+    if (n<6){ const [a, b] = I.mission.split('×').map(t=>Number(t.trim())); bd.setProblem(a, b); }
+  }
+  const wrap = mk('ovbg'+(side?' side':''), null, null, `
     <div class="chest"><div class="glow" id="glow"></div><div class="prize" id="prize">${I.prize}</div>
       <div class="lid" id="lid"></div>
       <div class="cbody"><div class="lock" id="lock">${I.code.split('').map((_,i)=>`<div id="l${i}"></div>`).join('')}</div></div>

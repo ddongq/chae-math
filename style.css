@@ -51,10 +51,10 @@ body:not(.lesson-mode) .lt{display:none}
 #parrot.talk svg{animation:bob .5s ease-in-out 3}
 @keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
 #pname{position:absolute;left:34px;top:110px;font-size:15px;font-weight:800;color:#fff;background:#2E9E5B;border-radius:10px;padding:1px 10px}
-#bubble{position:absolute;left:135px;top:4px;width:735px;height:120px;background:#fff;border-radius:24px;padding:12px 22px;font-size:23px;line-height:1.42;font-weight:600;box-shadow:0 5px 0 rgba(150,80,20,.18);display:flex;align-items:center}
+#bubble{position:absolute;left:135px;top:4px;width:735px;height:120px;background:#fff;border-radius:24px;padding:10px 24px;font-size:23px;line-height:1.38;font-weight:600;box-shadow:0 5px 0 rgba(150,80,20,.18);display:flex;align-items:center}
 #bubble:before{content:"";position:absolute;left:-16px;top:44px;border:12px solid transparent;border-right:18px solid #fff;border-left:none}
 #bottom.wide #bubble{width:1085px}
-#ctrls{position:absolute;right:0;top:0;width:340px;height:130px;display:flex;gap:12px;align-items:center;justify-content:flex-end}
+#ctrls{position:absolute;right:0;top:0;height:130px;display:flex;gap:12px;align-items:center;justify-content:flex-end}
 .cbtn{width:62px;height:62px;border-radius:50%;border:none;background:#fff;font-size:26px;box-shadow:0 4px 0 rgba(150,80,20,.25);cursor:pointer;color:var(--brown)}
 .cbtn:disabled{opacity:.35}
 .pill{height:62px;padding:0 22px;border-radius:31px;border:none;background:var(--red);color:#fff;font-size:22px;font-weight:800;box-shadow:0 4px 0 rgba(150,80,20,.25);cursor:pointer;white-space:nowrap}
@@ -149,26 +149,26 @@ body:not(.lesson-mode) .lt{display:none}
 .ptools{position:absolute;right:14px;top:12px;display:flex;flex-direction:column;gap:8px;z-index:9}
 .ptools button{width:54px;height:54px;border-radius:16px;border:none;background:#FFF3DF;font-size:24px;box-shadow:0 3px 0 rgba(150,80,20,.2);cursor:pointer}
 .ptools button.on{background:#FFD45C}
-.bnote{position:absolute;left:24px;top:14px;font-size:17px;font-weight:800;color:#9AB0C8;z-index:2}
+.bnote{position:absolute;left:30px;top:34px;width:150px;line-height:1.45;font-size:16px;font-weight:800;color:#9AB0C8;z-index:2}
 
 /* ---------- 키패드 ---------- */
-.status{left:20px;top:16px;width:420px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:var(--brown)}
+.status{position:absolute;left:40px;top:22px;width:380px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:var(--brown)}
 .status .lv{color:#E2A400;letter-spacing:2px}
 .status .timer{margin-left:auto;background:#FFF3DF;border-radius:14px;padding:4px 12px;font-variant-numeric:tabular-nums}
-.disp{left:40px;top:62px;width:380px;height:84px;border-radius:20px;background:#F6F3EE;border:3px solid #E7DCCB;font-size:56px;font-weight:800;text-align:right;padding-right:22px;line-height:78px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.disp{position:absolute;left:40px;top:64px;width:380px;height:84px;border-radius:20px;background:#F6F3EE;border:3px solid #E7DCCB;font-size:56px;font-weight:800;text-align:right;padding-right:22px;line-height:78px;font-variant-numeric:tabular-nums;color:var(--ink)}
 .disp.ok{border-color:var(--green);background:var(--greenBg);color:var(--green)}
 .disp.no{border-color:var(--red);background:var(--redBg)}
 .disp .ph{color:#C9BBA8;font-size:24px;font-weight:700;float:left;padding-left:18px}
-.keys{left:40px;top:166px;width:380px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.keys button{height:80px;border-radius:20px;border:none;background:#FFF3DF;font-size:38px;font-weight:800;color:var(--ink);box-shadow:0 4px 0 rgba(150,80,20,.22);cursor:pointer}
+.keys{position:absolute;left:40px;top:166px;width:380px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.keys button{height:74px;border-radius:20px;border:none;background:#FFF3DF;font-size:38px;font-weight:800;color:var(--ink);box-shadow:0 4px 0 rgba(150,80,20,.22);cursor:pointer}
 .keys button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(150,80,20,.22)}
 .keys .ok{background:var(--red);color:#fff;font-size:30px}
 .keys .del{font-size:28px}
 .keys button:disabled{opacity:.4}
 .shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
-.prog{left:40px;top:530px;width:380px;display:flex;gap:8px;justify-content:center}
-.prog i{width:26px;height:26px;border-radius:50%;background:#F1E6D6;display:block;font-style:normal;font-size:15px;text-align:center;line-height:26px}
+.prog{position:absolute;left:40px;top:518px;width:380px;display:flex;gap:16px;justify-content:center}
+.prog i{width:30px;height:30px;border-radius:50%;background:#F1E6D6;display:block;font-style:normal;font-size:16px;font-weight:800;text-align:center;line-height:30px}
 .prog i.ok{background:var(--green);color:#fff}
 .prog i.no{background:#F6B3B5;color:#fff}
 .prog i.cur{box-shadow:0 0 0 3px var(--red)}
@@ -248,3 +248,11 @@ body:not(.lesson-mode) .lt{display:none}
 #rename{margin-top:16px;background:none;border:none;font-size:17px;color:#9A5B1E;text-decoration:underline;cursor:pointer}
 #rotate{display:none;position:fixed;inset:0;z-index:99;background:#FFD7A8;align-items:center;justify-content:center;flex-direction:column;font-size:28px;font-weight:800;color:var(--brown);text-align:center;gap:14px;font-family:inherit}
 @media (orientation:portrait){#rotate{display:flex}}
+
+/* 보물상자: 오른쪽 상자 + 왼쪽 계산 공간 */
+.ovbg.side{left:790px;width:460px}
+.ovbg.side .chest{transform:scale(.82);margin:-20px 0 -24px}
+.ovbg.side .ovmsg{font-size:28px;margin-top:8px}
+.ovbg.side .ovsub{font-size:18px}
+.ovbg.side .minikeys{grid-template-columns:repeat(6,58px);margin-top:16px}
+.ovbg.side .minikeys button{height:56px;font-size:28px}
