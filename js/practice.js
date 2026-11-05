@@ -167,7 +167,13 @@ async function openPractice(isl, opts={}){
         }
         tries++; kp.mark(false); SFX.wrong();
         if (tries === 1){ firstType = type; Store.mistake(type); }
-        say(tries === 1 ? mistakeMsg(type, q.a, q.b) : `아직 아니야! <b>실수 찾기</b>나 <b>풀이 보기</b>를 눌러 볼까?`);
+        if (tries >= 3){
+          kp.cancel(); setCtrls(); revealed = true;
+          say(`세 번이나 도전했어, 멋져! 이번엔 정답을 같이 보자.`);
+          try { await waitFixed(1300); } catch(e){ return; }
+          if (sg === SG) resolve('no'); return;
+        }
+        say(tries === 1 ? mistakeMsg(type, q.a, q.b) : `아직 아니야! <b>실수 찾기</b>나 <b>풀이 보기</b>를 눌러 볼까?<br><span style="font-size:19px">한 번 더 틀리면 정답을 알려 줄게.</span>`);
         const two = mulModel(q.a, q.b).rows.length === 2;
         setCtrls(
           two ? btn('pill y sm', '🔍 실수 찾기', ()=>findMistake()) : null,
