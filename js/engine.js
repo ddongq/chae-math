@@ -4,21 +4,51 @@
 const $ = id => document.getElementById(id);
 const stage = $('stage'), fx = $('fx'), screenEl = $('screen'), ovEl = $('ov');
 
-/* ---------- 화면 크기 맞추기 ---------- */
+/* ---------- 화면 크기 맞추기 ----------
+   iOS Safari는 확대되면 innerWidth가 함께 줄어들어서, 확대와 상관없는 레이아웃 크기(clientWidth)로 맞춘다. */
 function fit(){
-  const s = Math.min(innerWidth/1280, innerHeight/800);
+  const de = document.documentElement, w = de.clientWidth || innerWidth, h = de.clientHeight || innerHeight;
+  const s = Math.min(w/1280, h/800);
   stage.style.transform = `translate(-50%,-50%) scale(${s})`;
 }
 addEventListener('resize', fit); fit();
 
-/* ---------- 화면 확대 막기 (아이패드) ----------
+/* ---------- 화면 확대 막기 · 확대됐을 때 원래대로 (아이패드) ----------
    iOS Safari는 viewport의 user-scalable=no를 무시하므로
    1) CSS touch-action:none 으로 두 번 탭·손가락 확대를 끄고
-   2) Safari 전용 gesture 이벤트와 두 손가락 touchmove를 막는다.
-   (펜·한 손가락 탭은 pointer 이벤트라 영향 없음) */
+   2) Safari 전용 gesture 이벤트와 두 손가락 touchmove를 막고
+   3) 길게 누르기 메뉴·글자 선택을 막는다.
+   그래도 확대되면(visualViewport.scale > 1) 바로 원래 배율로 되돌리고,
+   안 되돌아가면 '화면 원래대로' 버튼을 보여 주고 손가락 오므리기를 허용한다. */
+const VV = window.visualViewport;
+const zoomed = () => !!VV && VV.scale > 1.02;
 ['gesturestart','gesturechange','gestureend'].forEach(t =>
-  document.addEventListener(t, e => e.preventDefault(), {passive:false}));
-document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
+  document.addEventListener(t, e => { if (!zoomed()) e.preventDefault(); }, {passive:false}));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1 && !zoomed()) e.preventDefault(); }, {passive:false});
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('selectstart', e => e.preventDefault());
+
+const VIEWPORT = document.querySelector('meta[name=viewport]'), VP0 = VIEWPORT.content;
+function resetZoom(){
+  // viewport 값을 잠깐 바꿨다 되돌리면 Safari가 배율을 1로 다시 맞춘다
+  VIEWPORT.content = VP0.replace('maximum-scale=1', 'maximum-scale=1.0001');
+  setTimeout(()=>{ VIEWPORT.content = VP0; setTimeout(onViewport, 350); }, 60);
+}
+const unzoom = document.createElement('button');
+unzoom.id = 'unzoom'; unzoom.innerHTML = '🔍 화면 원래대로';
+unzoom.onclick = () => resetZoom();
+document.body.appendChild(unzoom);
+let zoomTry = 0;
+function onViewport(){
+  const z = zoomed();
+  document.documentElement.classList.toggle('zoomed', z);
+  unzoom.style.display = z ? 'block' : 'none';
+  if (!z){ zoomTry = 0; return; }
+  const k = 1/VV.scale;
+  Object.assign(unzoom.style, {left:(VV.offsetLeft + VV.width/2)+'px', top:(VV.offsetTop + 14*k)+'px', transform:`translateX(-50%) scale(${k})`});
+  if (zoomTry++ < 2) setTimeout(()=>{ if (zoomed()) resetZoom(); }, 250);
+}
+if (VV){ VV.addEventListener('resize', onViewport); VV.addEventListener('scroll', onViewport); }
 
 /* ---------- 애니메이션 엔진 (멈춤 · 속도 · 중단 지원) ---------- */
 let SPEED = 1, INSTANT = false, gen = 0, paused = false;

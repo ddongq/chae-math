@@ -99,6 +99,7 @@ class Board {
     size(); this._resize = size; addEventListener('resize', size);
     const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX-r.left)*740/r.width, (e.clientY-r.top)*565/r.height]; };
     let drawing = null;
+    cv.addEventListener('touchstart', e=>e.preventDefault(), {passive:false});   // 펜을 꾹 눌러도 확대·돋보기·메뉴가 뜨지 않게
     cv.addEventListener('pointerdown', e=>{
       if (e.pointerType==='pen') this.penSeen = true;
       if (this.penSeen && e.pointerType==='touch') return;      // 펜을 쓰면 손바닥 터치는 무시

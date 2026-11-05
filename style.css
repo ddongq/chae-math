@@ -366,3 +366,7 @@ body:not(.lesson-mode) .lt{display:none}
 .arow .at i{display:block;height:100%;border-radius:9px}
 .arow .an{width:60px;text-align:right;color:#7A5A3A;font-variant-numeric:tabular-nums}
 .advice{position:absolute;left:40px;top:358px;width:1140px;padding:16px 24px;border-radius:20px;background:#FFF8E6;border:3px solid #F3D7A4;font-size:20px;font-weight:700;line-height:1.6}
+
+/* 확대됐을 때: 손가락으로 오므려 되돌릴 수 있게 + 원래대로 버튼 */
+html.zoomed, html.zoomed body, html.zoomed button{touch-action:manipulation}
+#unzoom{display:none;position:fixed;z-index:200;transform-origin:50% 0;height:56px;padding:0 24px;border-radius:28px;border:none;background:var(--red);color:#fff;font-family:inherit;font-size:22px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;cursor:pointer}
