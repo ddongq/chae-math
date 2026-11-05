@@ -40,13 +40,13 @@ function layoutAudit(){
   // 2. 글자 넘침
   const bub = $('bubble');
   if (bub.firstElementChild && bub.firstElementChild.offsetHeight > bub.clientHeight - 16) add('글자 넘침', bub, '말풍선 높이를 넘음');
-  document.querySelectorAll('#eq, .tag, .disp, .pill, .hbtn, .choice, .rowlbl, #tabs button, .keys button, .status, .ncard, .cbtn').forEach(e=>{
+  document.querySelectorAll('.hcard, .chip, .gcell .ga, .echo button, .nitem, #eq, .tag, .disp, .pill, .hbtn, .choice, .rowlbl, #tabs button, .keys button, .status, .ncard, .cbtn').forEach(e=>{
     if (!shown(e)) return;
     if (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1) add('글자 넘침', e, `${e.scrollWidth}×${e.scrollHeight} > ${e.clientWidth}×${e.clientHeight}`);
   });
 
   // 3. 겹침
-  const TXT = [...document.querySelectorAll('.tag:not(.cnt), .rowlbl, #eq, .formula, .card, .title, .mini, .choice, .bnote, .status, .disp, .keys, .prog, #bubble, #ctrls > *, .ptools, .trophies, .lineq, .chk, .colLbl, .qtext')].filter(shown);
+  const TXT = [...document.querySelectorAll('.tag:not(.cnt), .rowlbl, #eq, .formula, .card, .title, .mini, .choice, .bnote, .status, .disp, .keys, .prog, #bubble, #ctrls > *, .ptools, .trophies, .lineq, .chk, .colLbl, .qtext, .qpaper, .hcard, .chip, .gcell, .ehint, .echo, .ecmp, .esum, .expcard, .advice, .anbox, .ascore, .hhead, .tower, .isl')].filter(shown);
   const BLK = [...document.querySelectorAll('.cube, .rod, .flat, .thou, .box, .bag')].filter(shown);
   const R = new Map([...TXT, ...BLK].map(e=>[e, sRect(e)]));
   for (let i=0;i<TXT.length;i++){

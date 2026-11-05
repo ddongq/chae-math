@@ -40,7 +40,7 @@ const currentIsland = () => { for (let n=1;n<=6;n++) if (!Store.isl(n).treasure)
 function resetScreen(){
   SG++; abortAll(); clearTimers(); closeLesson();
   screenEl.innerHTML = ''; fx.innerHTML = ''; ovEl.innerHTML = '';
-  KEYPAD = null; $('bottom').classList.remove('wide');
+  KEYPAD = null; $('bottom').classList.remove('wide'); $('tabs').className = ''; $('tabs').innerHTML = '';
 }
 
 /* ---------- 지도 ---------- */
@@ -64,6 +64,9 @@ function openMap(opt={}){
       }, screenEl);
     css(b, {left:(I.x)+'px', top:(I.y)+'px'});
   }
+  // 시험 등대 (언제든 들어갈 수 있음)
+  const tw = btn('tower', `${TOWER_SVG}<div class=nm>시험 등대</div><div class=sub>단원평가 · 문제은행</div>`, ()=>openTower(), screenEl);
+  css(tw, {left:'470px', top:'104px'});
   const from = opt.moveFrom ? ISL[opt.moveFrom] : ISL[cur];
   const boat = mk('boat', from.x+40, from.y-20, '⛵', null, screenEl);
   if (opt.moveFrom && opt.moveFrom < 6){ const to = ISL[opt.moveFrom+1]; setTimeout(()=>{ css(boat, {left:(to.x+40)+'px', top:(to.y-20)+'px'}); SFX.swoosh(); }, 500); }
@@ -203,6 +206,9 @@ function openParent(){
   const avg = a => a.length ? Math.round(a.reduce((x,y)=>x+y.sec,0)/a.length) : null;
   const first = avg(t.slice(0,5)), last = avg(t.slice(-5));
   const timeHtml = t.length ? `<div>첫 5문제 평균 <b>${first}초</b> → 최근 5문제 평균 <b>${last}초</b> ${last<first?'🚀':''}</div><div class=ptip style="margin-top:6px">${d.times.slice(-8).reverse().map(x=>`${x.q} · ${x.sec}초 ${x.ok?'✅':'🔁'}`).join('<br>')}</div>` : '<div class=ptip>훈련 섬에서 문제를 풀면 걸린 시간이 기록돼요.</div>';
+  const EX = ES(), eh = EX.hist.slice(-6).reverse();
+  const examHtml = (eh.length ? `<div class=ptip>${eh.map(h=>`${new Date(h.t).toLocaleDateString('ko-KR')} · ${h.title} — <b>${h.score}점</b> (${h.ok}/${h.n}, ${minsec(h.used)})`).join('<br>')}</div>` : '<div class=ptip>아직 본 시험이 없어요. 지도의 🗼 시험 등대에서 볼 수 있어요.</div>')
+    + `<div class=ptip style="margin-top:4px">오답 노트에 남은 문제: <b>${EX.note.length}개</b></div>`;
   const tips = ISL.slice(1).map((I,k)=>`<div class=ptip><b>${I.icon} ${I.name}</b> — ${PARENT_TIPS[k+1].join(' / ')}</div>`).join('');
   const p = mk('parent', null, null, `
     <button class="x" id="pX">✕</button>
@@ -212,6 +218,7 @@ function openParent(){
       <div><h4>자주 한 실수 Top 3</h4>${misHtml}</div>
       <div><h4>훈련 섬 손풀이 시간</h4>${timeHtml}</div>
     </div>
+    <h4>🗼 시험 등대 기록</h4>${examHtml}
     <h4>섬별 "이렇게 물어봐 주세요"</h4>${tips}
     <div class="pbtns">
       <button id="pUnlock">${d.unlockAll ? '🔓 섬 순서대로 열기로 되돌리기' : '🔓 모든 섬 바로 열기'}</button>

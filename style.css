@@ -255,3 +255,114 @@ body:not(.lesson-mode) .lt{display:none}
 .ovbg.side .ovsub{font-size:18px}
 .ovbg.side .minikeys{grid-template-columns:repeat(6,58px);margin-top:16px}
 .ovbg.side .minikeys button{height:56px;font-size:28px}
+
+/* ---------- 🗼 시험 등대 ---------- */
+.tower{position:absolute;width:140px;height:162px;border:none;background:none;cursor:pointer;padding:0;z-index:2}
+.tower svg{position:absolute;left:30px;top:0}
+.tower .beam{transform-box:view-box;transform-origin:40px 22px;animation:beam 3.2s ease-in-out infinite}
+@keyframes beam{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+.tower .nm{position:absolute;left:-20px;right:-20px;top:112px;text-align:center;font-size:20px;font-weight:900;color:#fff;text-shadow:0 2px 0 rgba(0,40,80,.5)}
+.tower .sub{position:absolute;left:-20px;right:-20px;top:140px;text-align:center;font-size:14px;font-weight:800;color:#EAF7FF;text-shadow:0 1px 0 rgba(0,40,80,.4)}
+
+/* 등대 입구 */
+.hhead{position:absolute;left:0;top:60px;width:1220px;text-align:center;font-size:22px;font-weight:700;line-height:1.55;color:#7A5A3A}
+.hcards{position:absolute;left:0;top:162px;width:1220px;display:flex;gap:26px;justify-content:center}
+.hcard{width:300px;height:330px;border-radius:26px;border:4px solid #F0C36A;background:#FFF8E6;box-shadow:0 6px 0 rgba(150,80,20,.18);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;color:var(--ink)}
+.hcard.sm{width:212px}
+.hk{font-size:52px;font-weight:900;color:var(--brown);line-height:1.1}
+.hn{font-size:19px;font-weight:800;line-height:1.45;text-align:center;min-height:56px;display:flex;align-items:center}
+.hd{font-size:18px;font-weight:700;color:#9A7A5A}
+.hb{font-size:18px;font-weight:700;color:#7A5A3A}
+.hb b{color:var(--red);font-size:24px}
+.hgo{height:48px;line-height:48px;padding:0 24px;border-radius:24px;background:var(--red);color:#fff;font-size:19px;font-weight:800}
+.bankbox{position:absolute;left:0;top:0;width:1220px;height:565px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.blabel{font-size:21px;font-weight:900;color:var(--brown)}
+.brow{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:1120px;margin-bottom:10px}
+.chip{height:56px;padding:0 22px;border-radius:28px;border:3px solid #E7DCCB;background:#fff;font-size:20px;font-weight:800;color:#9A8A7A;cursor:pointer;white-space:nowrap}
+.chip.on{background:#FFE08A;border-color:#E2A400;color:#6E3F12}
+.chip.on:before{content:"✓ "}
+.notelist{position:absolute;left:70px;top:128px;width:1080px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.nitem{height:96px;padding:12px 18px;border-radius:18px;background:#FFF8E6;border:3px solid #F3D7A4;font-size:21px;font-weight:800;line-height:1.35;overflow:hidden}
+.nitem .nu{color:#C08A2A}
+.nitem small{display:block;font-size:15px;color:#B08A5A;font-weight:700;margin-top:4px}
+.nmore{position:absolute;left:0;top:480px;width:1220px;text-align:center;font-size:19px;font-weight:800;color:#B08A5A}
+
+/* 시험 화면: 위쪽 번호 줄 */
+#tabs.qnav{gap:4px}
+#tabs.qnav button{width:34px;height:34px;padding:0;border-radius:50%;font-size:15px;background:rgba(255,255,255,.6);color:#9A6A3A}
+#tabs.qnav button.ans{background:#FFD45C;color:#6E3F12}
+#tabs.qnav button.ok{background:var(--green);color:#fff}
+#tabs.qnav button.no{background:#F6A9AC;color:#fff}
+#tabs.qnav button.on{background:#fff;color:var(--red);box-shadow:0 0 0 3px var(--red)}
+/* 시험지 */
+.qpaper{position:absolute;left:18px;top:16px;width:640px;padding:14px 22px 18px;background:rgba(255,255,255,.95);border:3px solid #F1E3CD;border-radius:20px;z-index:3}
+.qno{font-size:24px;font-weight:900;color:var(--brown)}
+.qno small{font-size:16px;font-weight:800;color:#B08A5A;margin-left:6px}
+.qh{font-size:22px;font-weight:800;line-height:1.5;margin-top:4px}
+.qbig{font-size:40px;font-weight:900;text-align:center;margin-top:12px;line-height:1.4;font-variant-numeric:tabular-nums}
+.qmid{font-size:28px;font-weight:800;text-align:center;margin-top:10px;line-height:1.7;font-variant-numeric:tabular-nums}
+.qword{font-size:24px;font-weight:700;line-height:1.65;margin-top:6px}
+.qbox{display:inline-block;min-width:1.25em;height:1.2em;line-height:1.05em;border:3px solid #E2A400;background:#FFF5CC;border-radius:8px;color:#B07800;text-align:center;vertical-align:middle;font-size:.9em}
+.qcirc{display:inline-block;width:1em;height:1em;margin:0 .15em;border:3px solid #9A8A7A;border-radius:50%;vertical-align:middle}
+.qlist{display:grid;grid-template-columns:1fr 1fr;gap:10px 30px;margin:14px auto 0;width:max-content;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.qcards{display:flex;gap:16px;justify-content:center;margin-top:14px}
+.qcards span{width:62px;height:80px;border-radius:12px;background:#fff;border:3px solid #E2A400;font-size:44px;font-weight:900;text-align:center;line-height:74px;box-shadow:0 3px 0 rgba(150,80,20,.2)}
+.vc{width:max-content;margin:8px auto 0;padding-left:40px;font-size:34px;font-weight:800;font-variant-numeric:tabular-nums}
+.vrow{position:relative;display:flex;justify-content:flex-end;width:200px;height:44px}
+.vrow span{width:40px;text-align:center;line-height:44px}
+.vrow i{position:absolute;left:-38px;top:0;line-height:44px;font-style:normal;color:#888}
+.vrow .vbox{height:38px;margin-top:3px;border:3px solid #E2A400;background:#FFF5CC;border-radius:8px;color:#B07800;line-height:32px;font-size:24px;font-weight:900}
+.vbar{width:240px;height:3px;margin:3px 0 3px -40px;background:var(--ink);border-radius:2px}
+.ps{font-size:.85em;color:#8A7A6A}
+/* 답 쓰는 곳 */
+.earea{position:absolute;inset:0}
+.status .pt{font-size:16px;color:#B08A5A}
+.status .timer.over{background:var(--redBg);color:var(--red)}
+.disp .du{font-size:26px;line-height:1;color:#9A8A7A;margin-left:8px}
+.keys .ok.next{font-size:24px}
+.ehint{position:absolute;left:40px;top:70px;width:380px;text-align:center;font-size:20px;font-weight:800;color:#B08A5A}
+.echo{position:absolute;left:40px;top:112px;width:380px;display:flex;flex-direction:column;gap:14px}
+.echo button{min-height:72px;padding:8px 20px;border-radius:20px;border:4px solid #F0C36A;background:#FFF8E6;font-size:26px;font-weight:800;color:var(--ink);text-align:left;box-shadow:0 4px 0 rgba(150,80,20,.18);cursor:pointer;font-variant-numeric:tabular-nums}
+.echo button b{color:#C08A2A;margin-right:6px}
+.ecmp{position:absolute;left:40px;top:150px;width:380px;display:flex;gap:18px;justify-content:center}
+.ecmp button{width:110px;height:110px;border-radius:24px;border:4px solid #F0C36A;background:#FFF8E6;font-size:60px;font-weight:900;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 rgba(150,80,20,.18)}
+.echo button.on,.ecmp button.on{background:#FFE08A;border-color:#E2A400}
+.echo button.ok,.ecmp button.ok{background:var(--greenBg);border-color:var(--green);color:var(--green)}
+.echo button.no,.ecmp button.no{background:var(--redBg);border-color:var(--red);color:var(--red)}
+.esum{position:absolute;left:40px;top:522px;width:380px;text-align:center;font-size:18px;font-weight:800;color:#B08A5A}
+.esum b{color:var(--brown)}
+.expcard{position:absolute;left:30px;top:70px;width:400px;padding:18px 22px;border-radius:20px;background:#FFF8E6;border:3px solid #F3D7A4;font-size:22px;font-weight:700;line-height:1.65}
+.adt{font-size:20px;font-weight:900;color:var(--brown);margin-bottom:6px}
+
+/* 채점표 */
+.gtitle{position:absolute;left:40px;top:30px;font-size:30px;font-weight:900;color:var(--brown)}
+.gscore{position:absolute;left:0;top:10px;width:1220px;text-align:center;font-size:64px;font-weight:900;color:var(--red);line-height:76px}
+.gscore small{font-size:30px;margin-left:4px}
+.stamp{position:absolute;right:40px;top:18px;width:190px;height:62px;border:5px solid var(--red);border-radius:16px;color:var(--red);font-size:26px;font-weight:900;text-align:center;line-height:52px;transform:rotate(-8deg);opacity:0;background:rgba(255,255,255,.7)}
+.gcell{position:absolute;border-radius:16px;background:#FFF8E6;border:2px solid #F1E3CD}
+.gcell .gn{position:absolute;left:10px;top:50%;margin-top:-22px;width:48px;height:44px;line-height:44px;text-align:center;font-size:22px;font-weight:900;color:var(--brown)}
+.gcell .gbody{position:absolute;left:66px;right:10px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.gcell .ga{font-size:22px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.gcell .ga small,.gcell .gc small{font-size:.7em;margin-left:2px}
+.gcell .gc:empty{display:none}
+.gcell .gc{font-size:16px;font-weight:800;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gemp{color:#C9BBA8;font-size:17px}
+.mk-o{position:absolute;left:5px;top:50%;margin-top:-29px;width:58px;height:58px;border:5px solid var(--red);border-radius:50%}
+.mk-x{position:absolute;left:2px;top:50%;margin-top:-3px;width:64px;height:6px;background:var(--red);border-radius:3px;transform:rotate(-55deg)}
+
+/* 약점 분석 */
+.ascore{position:absolute;left:40px;top:54px;width:300px;height:270px;border-radius:24px;background:#FFF8E6;border:3px solid #F3D7A4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:20px;font-weight:800;color:#7A5A3A}
+.ascore .asc{font-size:72px;font-weight:900;color:var(--red);line-height:1}
+.ascore .asc small{font-size:30px}
+.ascore .asm{font-size:17px;color:#9A8A7A}
+.anbox{position:absolute;top:54px}
+.anbox.au{left:380px}
+.anbox.ac{left:840px}
+.anbox h4{font-size:22px;font-weight:900;color:var(--brown);margin-bottom:8px}
+.arow{display:flex;align-items:center;gap:10px;height:42px;font-size:18px;font-weight:800}
+.arow .al{width:180px;white-space:nowrap}
+.anbox.ac .al{width:100px}
+.arow .at{width:150px;height:18px;border-radius:9px;background:#F1E6D6;overflow:hidden}
+.arow .at i{display:block;height:100%;border-radius:9px}
+.arow .an{width:60px;text-align:right;color:#7A5A3A;font-variant-numeric:tabular-nums}
+.advice{position:absolute;left:40px;top:358px;width:1140px;padding:16px 24px;border-radius:20px;background:#FFF8E6;border:3px solid #F3D7A4;font-size:20px;font-weight:700;line-height:1.6}
