@@ -7,15 +7,15 @@
   --block:#FFD45C; --blockEdge:#D29B17;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;touch-action:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{
   background:radial-gradient(circle at 80% 0%,#FFE9C9 0,#FFD7A8 45%,#F7B983 100%);
   font-family:ui-rounded,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
   color:var(--ink);
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
-  touch-action:manipulation;
+  touch-action:none;
 }
-button{font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;touch-action:none;-webkit-tap-highlight-color:transparent}
 #stage{position:absolute;left:50%;top:50%;width:1280px;height:800px;transform-origin:center center}
 .instant *{transition:none!important}
 b{font-weight:800}
@@ -224,7 +224,7 @@ body:not(.lesson-mode) .lt{display:none}
 .cert h3{font-size:40px;font-weight:900;color:#8A4B12}
 .cert p{font-size:24px;font-weight:700;margin-top:12px;line-height:1.5}
 
-.parent{left:30px;top:80px;width:1220px;height:565px;border-radius:28px;background:#fff;padding:24px 30px;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:18px}
+.parent{left:30px;top:80px;width:1220px;height:565px;border-radius:28px;background:#fff;padding:24px 30px;overflow:auto;touch-action:pan-y;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:18px}
 .parent h3{font-size:26px;margin-bottom:12px}
 .parent h4{font-size:20px;margin:18px 0 8px;color:var(--brown)}
 .parent table{border-collapse:collapse;width:100%}

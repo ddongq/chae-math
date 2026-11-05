@@ -11,6 +11,15 @@ function fit(){
 }
 addEventListener('resize', fit); fit();
 
+/* ---------- 화면 확대 막기 (아이패드) ----------
+   iOS Safari는 viewport의 user-scalable=no를 무시하므로
+   1) CSS touch-action:none 으로 두 번 탭·손가락 확대를 끄고
+   2) Safari 전용 gesture 이벤트와 두 손가락 touchmove를 막는다.
+   (펜·한 손가락 탭은 pointer 이벤트라 영향 없음) */
+['gesturestart','gesturechange','gestureend'].forEach(t =>
+  document.addEventListener(t, e => e.preventDefault(), {passive:false}));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
+
 /* ---------- 애니메이션 엔진 (멈춤 · 속도 · 중단 지원) ---------- */
 let SPEED = 1, INSTANT = false, gen = 0, paused = false;
 const running = new Set();
