@@ -126,14 +126,44 @@ const SFX = {
 };
 
 /* ---------- 저장 (이 기기 · 이 브라우저) ---------- */
+/* v2 (2026-11-14): 기록을 바다별로 나눈다 — 수집 설계(수집_기획안.md 7·13장)와 같은 구조
+   { ver:2, name, unlockAll, sea:{mul:{isl}, div:{isl}}, mis:{mul:{…}, div:{…}}, times, log, exam:{best,hist,note[{…,sea,addedAt}],cur}, ev:[…최근 800] }
+   지금 보고 있는 바다는 Store.sea ('mul' | 'div'). 섬 번호만 넘기면 지금 바다로 본다. */
+const SEAS = ['mul', 'div'];
+const MIS_KEYS = {
+  mul: ['shift','carry','add','fact','zero','other'],
+  div: ['rem','zero','sub','fact','down','other'],   // 나머지≥나누는 수 · 몫 가운데 0 빠뜨림 · 빼기 · 곱셈구구 · 내려쓰기 · 기타
+};
+const zeroMis = sea => Object.fromEntries(MIS_KEYS[sea].map(k=>[k, 0]));
 const Store = {
-  key: 'chae_math_v1', d: null,
-  blank(){ return {name: localStorage.getItem('chae_name') || '채원', isl:{}, mis:{shift:0,carry:0,add:0,fact:0,zero:0,other:0}, times:[], log:[], unlockAll:false}; },
-  load(){ try { this.d = JSON.parse(localStorage.getItem(this.key)); } catch(e){} if (!this.d) this.d = this.blank(); return this.d; },
+  key: 'chae_math_v1', d: null, sea: 'mul',
+  blank(){ return {ver:2, name: localStorage.getItem('chae_name') || '채원', unlockAll:false,
+    sea:{mul:{isl:{}}, div:{isl:{}}}, mis:{mul:zeroMis('mul'), div:zeroMis('div')}, times:[], log:[], ev:[]}; },
+  // v1 → v2: 섬 기록은 곱셈 바다로, 실수는 곱셈 실수로, 오답 노트 항목에는 sea·addedAt
+  migrate(d){
+    if (!d || d.ver === 2) return d;
+    const b = this.blank(), today = Date.now();
+    b.name = d.name || b.name; b.unlockAll = !!d.unlockAll;
+    b.sea.mul.isl = d.isl || {}; b.mis.mul = Object.assign(zeroMis('mul'), d.mis || {});
+    b.times = d.times || []; b.log = d.log || [];
+    if (d.exam){ b.exam = d.exam; (b.exam.note||[]).forEach(q=>{ if (!q.sea) q.sea = 'mul'; if (!q.addedAt) q.addedAt = today; }); }
+    return b;
+  },
+  load(){
+    try { this.d = JSON.parse(localStorage.getItem(this.key)); } catch(e){}
+    if (!this.d) this.d = this.blank();
+    else if (this.d.ver !== 2){ this.d = this.migrate(this.d); this.save(); }
+    SEAS.forEach(s=>{ this.d.sea[s] = this.d.sea[s] || {isl:{}}; this.d.mis[s] = Object.assign(zeroMis(s), this.d.mis[s] || {}); });
+    this.d.ev = this.d.ev || [];
+    return this.d;
+  },
   save(){ try { localStorage.setItem(this.key, JSON.stringify(this.d)); } catch(e){} },
-  isl(n){ return this.d.isl[n] || (this.d.isl[n] = {}); },
-  mark(n, k, v=true){ this.isl(n)[k] = v; this.save(); },
-  mistake(type){ this.d.mis[type] = (this.d.mis[type]||0) + 1; this.save(); },
+  isl(n, sea=this.sea){ const I = this.d.sea[sea].isl; return I[n] || (I[n] = {}); },
+  mark(n, k, v=true, sea=this.sea){ this.isl(n, sea)[k] = v; this.save(); },
+  mis(sea=this.sea){ return this.d.mis[sea]; },
+  mistake(type, sea=this.sea){ const m = this.mis(sea); m[type] = (m[type]||0) + 1; this.save(); },
+  // 행동 기록: 수집 시스템이 쓸 자리. 이름은 바다와 무관, sea로 구분 (solve · trace.done · island.treasure · verify.* …)
+  ev(name, data={}){ const e = Object.assign({ev:name, sea:this.sea, t:Date.now()}, data); this.d.ev.push(e); if (this.d.ev.length > 800) this.d.ev.splice(0, this.d.ev.length-800); this.save(); return e; },
   reset(){ const name = this.d.name; this.d = this.blank(); this.d.name = name; this.save(); },
 };
 Store.load();

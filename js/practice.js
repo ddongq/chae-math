@@ -203,7 +203,7 @@ async function openPractice(isl, opts={}){
           if (v === s.ans){ kp.mark(true); SFX.right(); try { await bd.reveal(s.acts, 120); } catch(e){ return; } continue; }
           kp.mark(false); SFX.wrong();
           const t = s.name==='덧셈' ? 'add' : (diagnose(q.a, s===steps[0] ? r1.m : r2.m, s===steps[0] ? v : v/10) === 'carry' ? 'carry' : 'fact');
-          if (firstType === 'other') Store.d.mis.other = Math.max(0, (Store.d.mis.other||0)-1), Store.mistake(t), firstType = t;
+          if (firstType === 'other') Store.mis().other = Math.max(0, (Store.mis().other||0)-1), Store.mistake(t), firstType = t;
           say(`찾았다! <b>${s.name}</b>에서 실수했어. 정답은 <b>${fmt(s.ans)}</b>! 세로셈으로 다시 볼까?`);
           try { await bd.reveal(s.acts, 260); } catch(e){ return; }
           break;

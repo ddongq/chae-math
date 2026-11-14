@@ -263,7 +263,7 @@ function openParent(){
     const cells = n===6 ? [['wp','문장제'],['blank','빈칸'],['cards','카드'],['est','어림']].map(([x,l])=>`${l} ${s[x]?'✅':'⬜'}`).join(' ') : `${s.lesson?'✅':'⬜'} 원리 · ${n===5?'':(s.guided?'✅':'⬜')+' 따라 풀기 · '}연습 ${pr}`;
     return `<tr><td>${n}일차 ${I.icon} ${I.name}</td><td style="text-align:left">${cells}</td><td>${s.treasure ? I.prize : '⬜'}</td></tr>`;
   }).join('');
-  const mis = Object.entries(d.mis).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const mis = Object.entries(Store.mis('mul')).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   const maxM = mis.length ? mis[0][1] : 1;
   const misHtml = mis.length ? mis.slice(0,3).map(([k,v],i)=>`<div style="margin:6px 0"><b>${i+1}. ${MISTAKE_NAME[k]}</b> ${v}회<span class=bar style="width:${Math.round(v/maxM*180)}px"></span><div class=ptip>→ ${MISTAKE_ADVICE[k]}</div></div>`).join('') : '<div class=ptip>아직 기록된 실수가 없어요.</div>';
   const t = d.times.filter(x=>x.ok);
