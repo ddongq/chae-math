@@ -29,10 +29,13 @@ function layoutAudit(){
   // 1. 칸 정렬
   document.querySelectorAll('.board').forEach(b=>{
     const br = sRect(b);
+    // 나눗셈 보드는 칸 크기·시작점이 따로 (data-cs · data-rh · data-gx · data-gy)
+    const cw = +b.dataset.cs || CELL, ch = +b.dataset.rh || CELL, gx = b.dataset.cs ? +b.dataset.gx : GX0, gy = b.dataset.cs ? +b.dataset.gy : GY0;
     b.querySelectorAll('.bd').forEach(d=>{
       if (!shown(d)) return;
       const r = sRect(d), cx = (r.l+r.r)/2 - br.l, cy = (r.t+r.b)/2 - br.t;
-      const dx = ((cx - GX0) % CELL) - CELL/2, dy = ((cy - GY0) % CELL) - CELL/2;
+      const m = (v, k) => ((v % k) + k) % k;
+      const dx = m(cx - gx, cw) - cw/2, dy = m(cy - gy, ch) - ch/2;
       if (Math.abs(dx) > .75 || Math.abs(dy) > .75) add('칸 정렬', d, `칸 가운데에서 가로 ${dx.toFixed(1)}px, 세로 ${dy.toFixed(1)}px`);
     });
   });
@@ -46,7 +49,7 @@ function layoutAudit(){
   });
 
   // 3. 겹침
-  const TXT = [...document.querySelectorAll('.tag:not(.cnt), .rowlbl, #eq, .formula, .card, .title, .mini, .choice, .bnote, .status, .disp, .keys, .prog, #bubble, #ctrls > *, .ptools, .trophies, .lineq, .chk, .colLbl, .qtext, .qpaper, .hcard, .chip, .gcell, .ehint, .echo, .ecmp, .esum, .expcard, .advice, .anbox, .ascore, .hhead, .tower, .isl')].filter(shown);
+  const TXT = [...document.querySelectorAll('.dvstory, .dvhead, .dvout, .dveq .dvl, .dvbadge, .tag:not(.cnt), .rowlbl, #eq, .formula, .card, .title, .mini, .choice, .bnote, .status, .disp, .keys, .prog, #bubble, #ctrls > *, .ptools, .trophies, .lineq, .chk, .colLbl, .qtext, .qpaper, .hcard, .chip, .gcell, .ehint, .echo, .ecmp, .esum, .expcard, .advice, .anbox, .ascore, .hhead, .tower, .isl')].filter(shown);
   const BLK = [...document.querySelectorAll('.cube, .rod, .flat, .thou, .box, .bag')].filter(shown);
   const R = new Map([...TXT, ...BLK].map(e=>[e, sRect(e)]));
   for (let i=0;i<TXT.length;i++){

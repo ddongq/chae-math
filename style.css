@@ -191,6 +191,7 @@ body:not(.lesson-mode) .lt{display:none}
 .trophies span{font-size:30px;opacity:.25}
 .trophies span.got{opacity:1}
 .boat{font-size:54px;z-index:3;transition:left .8s,top .8s}
+.boat img{display:block;width:118px;height:auto;margin:-28px 0 0 -30px;filter:drop-shadow(0 4px 0 rgba(0,40,80,.18))}
 
 /* ---------- 활동 ---------- */
 .choice{height:84px;padding:0 30px;border-radius:22px;border:4px solid #F0C36A;background:#FFF8E6;font-size:34px;font-weight:800;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 rgba(150,80,20,.18)}
@@ -382,3 +383,47 @@ html.zoomed, html.zoomed body, html.zoomed button{touch-action:manipulation}
 /* 종이결 (engine.js에서 한 번 만든 그림을 배경으로) */
 body.paper{background-image:var(--paper),radial-gradient(circle at 80% 0%,rgba(255,250,238,.75) 0,rgba(255,250,238,0) 60%)}
 #startParrot img{display:block;height:250px;width:auto}
+.cert .certpic{display:block;height:190px;width:auto;margin:0 auto 6px}
+.ovbg.gate{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:36px}
+.ovbg.gate img{height:430px;width:auto}
+.ovbg.gate .ovsub{line-height:1.6}
+.parent .psea{display:inline-flex;gap:6px;margin-left:12px;vertical-align:middle}
+.parent .psea button{height:34px;padding:0 12px;border-radius:17px;border:2px solid #E7DCCB;background:#FFF8EE;font-size:15px;font-weight:800;color:var(--brown);cursor:pointer}
+.parent .psea button.on{background:#8A4B12;border-color:#8A4B12;color:#fff}
+
+/* ---------- 나눗셈 바다 ---------- */
+.dvscene{overflow:hidden;background-color:#F8EEDC}
+.dvscene svg{position:absolute;left:0;top:0}
+.dvlb text{font-size:22px;font-weight:800;font-family:inherit}
+.dvlb.s text{font-size:16px}
+.dvbadge{position:absolute;left:22px;top:18px;font-size:16px;font-weight:800;color:#9A6A3A;background:#F6EBDA;border-radius:12px;padding:3px 12px;z-index:2}
+.dvform{position:absolute;left:0;top:0;width:460px;height:565px}
+.dvform svg{position:absolute;left:0;top:0}
+.dvform .dvdigits,.dvform .dvbands{position:absolute;inset:0}
+.dvform .ldg{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink)}
+.dvform .ldg.pop{animation:dvpop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes dvpop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.dvform .cband{position:absolute;border-radius:14px}
+.dvform .cband.g{background:var(--greenBg)} .dvform .cband.b{background:var(--blueBg)} .dvform .cband.s{background:var(--sumBg)}
+.dvform .dvchk{position:absolute;left:0;width:460px;text-align:center;font-size:25px;font-weight:800;color:#6B4A2E;opacity:0;transition:opacity .4s}
+.dvform .dvchk.on{opacity:1}
+.dveq{position:absolute;left:30px;top:70px;width:400px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.dveq .dvl{font-weight:800;text-align:center;color:var(--ink)}
+.dveq .dvl.big{font-size:46px} .dveq .dvl.mid{font-size:30px} .dveq .dvl.sm{font-size:19px;color:#7A5A3A;line-height:1.6}
+.dveq .dvl.hit{background:#FFF1B8;border-radius:12px;padding:0 14px}
+.dveq .tag{display:inline-block;min-width:34px;background:#F6EBDA;border-radius:8px;padding:0 6px;font-weight:900}
+.pill.opt{background:#fff;color:var(--ink);font-size:24px;min-width:108px}
+.dvstory{position:absolute;left:140px;top:120px;width:500px;font-size:27px;font-weight:700;line-height:1.6;text-align:center}
+.dvstory .ic{font-size:64px;margin-bottom:6px}
+.dvstory.big{font-size:52px;font-weight:900;top:200px}
+.pFull .dvstory.big{left:0;width:1220px;font-size:44px;top:190px}
+.dvstory .bx{display:inline-block;min-width:70px;border:4px dashed #C9A97A;border-radius:14px;color:#C9A97A;padding:0 8px}
+.dvstory .bx.ok{border-style:solid;border-color:var(--green);color:var(--green)}
+.dvhead{position:absolute;left:0;top:40px;width:1220px;text-align:center;font-size:26px;font-weight:800;color:var(--brown)}
+.dvcardrow{position:absolute;left:0;top:120px;width:1220px;display:flex;justify-content:center;align-items:center;gap:16px}
+.dvcardrow .nslot{position:relative;display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:900;color:var(--ink)}
+.dvcardrow .nslot.dv{margin-left:6px}
+.dvop{font-size:60px;font-weight:900;color:#9A6A3A;margin:0 6px}
+.dvout{position:absolute;left:0;top:290px;width:1220px;text-align:center;font-size:40px;font-weight:800;color:var(--ink)}
+.dvhand{position:absolute;left:0;top:380px;width:1220px;display:flex;justify-content:center;gap:22px}
+.dvhand .ncard{position:relative}
