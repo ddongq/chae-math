@@ -13,6 +13,7 @@ async function simpleSolve(bd, kp, q, sg){
     if (sg !== SG) return null;
     const type = diagnose(q.a, q.b, v);
     if (type === 'ok'){ kp.mark(true); SFX.right(); return tries ? 'fix' : 'ok'; }
+    if (isSloppy(type, v, q.a*q.b)){ say(SLOPPY_MSG); continue; }
     tries++; kp.mark(false); SFX.wrong();
     if (tries === 1){ Store.mistake(type); say(mistakeMsg(type, q.a, q.b)); }
     else {
@@ -25,7 +26,7 @@ async function simpleSolve(bd, kp, q, sg){
 function nextBtn(label='다음 ▶'){ return new Promise(res=>setCtrls(btn('pill', label, res))); }
 function applyDone(key, onDone){
   Store.mark(6, key); SFX.fanfare(); confetti(30, 1220);
-  say(`<b>${APPLY_NAME[key]}</b> 완료! 보석을 하나 더 모았어 💎`);
+  say(`<b>${APPLY_NAME[key]}</b> 완료! 끝까지 해냈어, {n} 대장님!`);
   setCtrls(btn('pill nudge', '다음 활동 ▶', ()=>onDone && onDone()));
 }
 const APPLY_NAME = {wp:'📖 문장제', blank:'🔍 빈칸 추리', cards:'🃏 숫자카드', est:'⚖️ 어림·오답 찾기'};

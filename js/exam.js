@@ -478,7 +478,8 @@ function startExam(spec, resume){
     const key = examKey(spec);
     if (spec.mode !== 'bank') E.best[key] = Math.max(E.best[key] ?? 0, score);
     E.hist.push({key, title:ex.title, score, ok, n:N, used, t:Date.now()}); if (E.hist.length > 60) E.hist.shift();
-    ex.qs.forEach((q,k)=>{ if (!res[k] && !E.note.some(x=>x.html === q.html)) E.note.push({...q, from:ex.title}); });
+    // 안 푼(빈) 문제는 오답 노트에 넣지 않는다 — 빈 시험지로 노트를 채우는 길 막기
+    ex.qs.forEach((q,k)=>{ if (!res[k] && S.ans[k] !== null && !E.note.some(x=>x.html === q.html)) E.note.push({...q, from:ex.title}); });
     while (E.note.length > 80) E.note.shift();
     E.cur = null; Store.save();
     safe(showGrading)({ex, ans:S.ans, res, ok, score, used, diag});
@@ -528,7 +529,8 @@ async function showGrading(R, instant){
   }
   const msg = R.score === 100 ? `<b>100점</b>! 완벽해, {n} 대장님! 🎉` : R.score >= 90 ? `<b>${R.score}점</b>! 정말 훌륭해! 틀린 ${wrongN}문제만 다시 보면 완벽!`
             : R.score >= 70 ? `<b>${R.score}점</b>! 잘했어. <b>약점 분석</b>을 보고 틀린 문제를 다시 풀어 볼까?` : `<b>${R.score}점</b>. 괜찮아! 틀린 문제를 다시 풀면 실력이 쑥쑥 올라.`;
-  say(msg + ` <span style="font-size:19px">(걸린 시간 ${minsec(R.used)})</span>`);
+  const blankN = R.ans.filter(a=>a === null || a === undefined).length;
+  say(msg + ` <span style="font-size:19px">(걸린 시간 ${minsec(R.used)}${blankN ? ` · 안 푼 문제 ${blankN}개` : ''})</span>`);
   resultCtrls(R, 'sheet');
 }
 function resultCtrls(R, at){

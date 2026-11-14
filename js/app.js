@@ -71,11 +71,7 @@ function openMap(opt={}){
   const boat = mk('boat', from.x+40, from.y-20, '⛵', null, screenEl);
   if (opt.moveFrom && opt.moveFrom < 6){ const to = ISL[opt.moveFrom+1]; setTimeout(()=>{ css(boat, {left:(to.x+40)+'px', top:(to.y-20)+'px'}); SFX.swoosh(); }, 500); }
   const tr = mk('trophies', null, null, '보물 ' + ISL.slice(1).map((I,k)=>`<span class="${Store.isl(k+1).treasure?'got':''}">${I.prize}</span>`).join(''), null, screenEl);
-  const pb = btn('hbtn', '🔒 부모님 (길게 누르기)', ()=>{}, screenEl); css(pb, {left:'1000px', top:'588px', position:'absolute'});
-  let pt = null;
-  pb.onpointerdown = ()=>{ pt = setTimeout(()=>{ SFX.ding(); openParent(); }, 1000); };
-  pb.onpointerup = pb.onpointerleave = ()=>clearTimeout(pt);
-  pb.onclick = ()=>say('부모님 화면은 버튼을 <b>1초 동안 길게</b> 누르면 열려요.');
+  const pb = btn('hbtn', '🔒 부모님', ()=>askPin(openParent), screenEl); css(pb, {left:'1000px', top:'588px', position:'absolute'});
   const allDone = ISL.slice(1).every((_,k)=>Store.isl(k+1).treasure);
   say(allDone ? `{n} 대장님, 모든 섬을 정복했어! 👑 복습하고 싶은 섬을 골라 봐.`
               : `{n} 대장님, 오늘은 <b>${cur}일차 ${ISL[cur].name}</b>을 탐험할 차례야! 섬을 눌러 출발!`);
@@ -124,9 +120,10 @@ async function openTreasure(n){
   }
   // 아직 안 연 상자: 왼쪽에 계산 공간(공책 보드), 오른쪽에 상자
   const side = !isl.treasure;
+  let bd = null, ma = 0, mb = 0;
   if (side){
-    const bd = new Board({pen:true, note: n<6 ? '✏️ 미션 문제를 여기서 풀어 봐요' : '✏️ 숫자카드 2, 5, 7, 9로 곱을 만들어 계산해 봐요'});
-    if (n<6){ const [a, b] = I.mission.split('×').map(t=>Number(t.trim())); bd.setProblem(a, b); }
+    bd = new Board({pen:true, note: n<6 ? '✏️ 미션 문제를 여기서 풀어 봐요' : '✏️ 숫자카드 2, 5, 7, 9로 곱을 만들어 계산해 봐요'});
+    if (n<6){ [ma, mb] = I.mission.split('×').map(t=>Number(t.trim())); bd.setProblem(ma, mb); }
   }
   const wrap = mk('ovbg'+(side?' side':''), null, null, `
     <div class="chest"><div class="glow" id="glow"></div><div class="prize" id="prize">${I.prize}</div>
@@ -148,6 +145,26 @@ async function openTreasure(n){
   let v = '', wrong = 0;
   const render = () => I.code.split('').forEach((_,i)=>$('l'+i).textContent = v[i] || '');
   const mkEl = $('mk');
+  // 두 번째로 틀리면 비밀번호 대신 미션을 같이 푼다 (정답 공개는 세 번째부터)
+  const helpTogether = () => {
+    if (n === 6){ say(`같이 생각해 보자! 큰 숫자 <b>9</b>와 <b>7</b>을 <b>십의 자리</b>에 놓아 봐. 9□ × 7□에서 남은 <b>2</b>와 <b>5</b>는 어디에 둘까? 두 가지를 공책에 곱해서 더 큰 쪽이 비밀번호야.`); return; }
+    const M = mulModel(ma, mb);
+    if (M.rows.length === 2 && bd){
+      const S = solutionStages(ma, mb).S, cut = S.findIndex(s=>s.acts && s.acts.some(x=>x.t==='line'));
+      bd.setProblem(ma, mb); bd.clearInk(); fire(bd.reveal(S.slice(0, cut), 200).then(()=>bd.unhl()));
+      say(`같이 풀어 보자! 공책에 <b>${ma} × ${M.rows[0].m} = ${fmt(M.rows[0].val)}</b>, <b>${ma} × ${M.rows[1].m}0 = ${fmt(M.rows[1].val)}</b> 두 줄을 써 줬어. 두 줄을 <b>더하면</b> 비밀번호야!`);
+    } else if (ma%10===0 && mb%10===0){
+      say(`같이 풀어 보자! 0을 떼고 <b>${ma/10} × ${mb/10}</b>${J(mb/10,'을','를')} 먼저 구한 다음, 끝에 0을 <b>몇 개</b> 붙일지 세어 봐.`);
+    } else {
+      const bt = Math.floor(mb/10);
+      say(`같이 풀어 보자! <b>${ma} × ${bt}</b>${J(bt,'을','를')} 먼저 구하고, 끝에 <b>0</b>을 하나 붙여 봐.`);
+    }
+  };
+  const showCode = () => {
+    isl.codeShown = true; Store.save();
+    say(`세 번이나 도전했어, 멋져! 비밀번호는 <b>${I.code}</b>. ${n<6 ? `(${I.mission} = ${fmt(Number(I.code))}) 공책의 세로셈과 비교해 봐.` : '(92 × 75 = 6900)'}`);
+    if (bd && n<6 && wrong === 3){ abortAll(); bd.setProblem(ma, mb); bd.clearInk(); fire(bd.reveal(solutionStages(ma, mb).S, 160).then(()=>bd.unhl())); }
+  };
   await new Promise(res=>{
     [1,2,3,4,5,6,7,8,9,0].forEach(d=>btn('', String(d), ()=>{
       if (v.length >= I.code.length) return; v += d; render();
@@ -155,7 +172,9 @@ async function openTreasure(n){
         if (v === I.code){ res(); return; }
         wrong++; SFX.wrong(); shake($('lock'));
         setTimeout(()=>{ v = ''; render(); }, 500);
-        say(wrong < 2 ? `앗, 아니야! 미션 <b>${I.mission}</b>을 공책에 계산해 볼까?` : `비밀번호는 <b>${I.code}</b>! ${n<6 ? `(${I.mission} = ${fmt(Number(I.code))})` : '(92 × 75 = 6900)'}`);
+        if (wrong === 1) say(`앗, 아니야! 미션 <b>${I.mission}</b>을 공책에 계산해 볼까?`);
+        else if (wrong === 2) helpTogether();
+        else showCode();
       }
     }, mkEl));
     btn('', '⌫', ()=>{ v = v.slice(0,-1); render(); }, mkEl);
@@ -187,6 +206,51 @@ function showCert(){
   SFX.fanfare(); confetti(30, 1220, ovEl);
   say(`정말 대단해, {n} 대장님! 화면을 캡처해서 가족에게 자랑해 봐! 🎉`);
   setCtrls(btn('pill', '🗺 지도로', ()=>openMap()));
+}
+
+/* ---------- 부모님 비밀번호 (4자리) ----------
+   학습 기록과 따로 저장해서 '기록 초기화'에도 남는다.
+   잊었을 때: 주소 끝에 ?pin=reset 을 붙여 열면 다시 정할 수 있다. */
+const PIN_KEY = 'chae_math_pin';
+const getPin = () => { try { return localStorage.getItem(PIN_KEY); } catch(e){ return null; } };
+const setPin = p => { try { p ? localStorage.setItem(PIN_KEY, p) : localStorage.removeItem(PIN_KEY); } catch(e){} };
+if (/[?&]pin=reset\b/.test(location.search)){
+  setPin(null);
+  try { history.replaceState(null, '', location.pathname + location.search.replace(/[?&]pin=reset\b/, '').replace(/^&/, '?') + location.hash); } catch(e){}
+}
+function askPin(onOk){
+  ovEl.innerHTML = '';
+  const saved = getPin();
+  let first = null;                       // 처음 정할 때 첫 번째 입력
+  const wrap = mk('ovbg pinbg', null, null, `
+    <div class="pinic">🔒</div>
+    <div class="ovmsg" id="pmsg"></div>
+    <div class="ovsub" id="psub"></div>
+    <div class="pinbox" id="pbox">${'<div></div>'.repeat(4)}</div>
+    <div class="minikeys" id="pkeys"></div>`, null, ovEl);
+  const title = () => {
+    if (saved){ $('pmsg').textContent = '부모님 확인'; $('psub').innerHTML = '부모님 비밀번호 4자리를 입력해 주세요.'; }
+    else if (!first){ $('pmsg').textContent = '부모님 비밀번호 정하기'; $('psub').innerHTML = '아이가 모르는 숫자 4자리를 정해 주세요.<br>부모님 화면을 열 때마다 물어봐요.'; }
+    else { $('pmsg').textContent = '한 번 더 입력해 주세요'; $('psub').innerHTML = '방금 정한 4자리를 다시 눌러 확인해요.'; }
+  };
+  let v = '';
+  const render = () => [...$('pbox').children].forEach((d,i)=>d.textContent = v[i] ? '●' : '');
+  const done = val => {
+    if (saved){
+      if (val === saved){ ovEl.innerHTML = ''; SFX.ding(); onOk(); return; }
+      SFX.wrong(); shake($('pbox')); $('psub').innerHTML = '비밀번호가 달라요. 다시 입력해 주세요.';
+    } else if (!first){ first = val; title(); }
+    else if (val === first){ setPin(val); ovEl.innerHTML = ''; SFX.ding(); onOk(); return; }
+    else { first = null; SFX.wrong(); shake($('pbox')); title(); $('psub').innerHTML = '두 번 입력한 숫자가 달라요. 처음부터 다시 정해 주세요.'; }
+    setTimeout(()=>{ v = ''; render(); }, 350);
+  };
+  [1,2,3,4,5,6,7,8,9,0].forEach(d=>btn('', String(d), ()=>{
+    if (v.length >= 4) return; v += d; render();
+    if (v.length === 4) done(v);
+  }, $('pkeys')));
+  btn('', '⌫', ()=>{ v = v.slice(0,-1); render(); }, $('pkeys'));
+  btn('pinx', '✕', ()=>{ ovEl.innerHTML = ''; }, $('pkeys'));
+  title(); render();
 }
 
 /* ---------- 부모님 화면 ---------- */
@@ -223,9 +287,12 @@ function openParent(){
     <div class="pbtns">
       <button id="pUnlock">${d.unlockAll ? '🔓 섬 순서대로 열기로 되돌리기' : '🔓 모든 섬 바로 열기'}</button>
       <button id="pName">✏️ 이름 바꾸기</button>
+      <button id="pPin">🔑 비밀번호 바꾸기</button>
       <button id="pReset">🗑 학습 기록 초기화</button>
     </div>
-    <div class=ptip style="margin-top:10px">기록은 이 아이패드의 이 브라우저 안에만 저장돼요. 다른 기기와는 공유되지 않아요.</div>`, null, ovEl);
+    <div class=ptip style="margin-top:10px">기록은 이 아이패드의 이 브라우저 안에만 저장돼요. 다른 기기와는 공유되지 않아요.<br>
+      부모님 비밀번호를 잊었을 때는 주소 끝에 <b>?pin=reset</b> 을 붙여 열면 다시 정할 수 있어요.</div>`, null, ovEl);
+  $('pPin').onclick = ()=>{ setPin(null); askPin(openParent); };
   $('pX').onclick = ()=>{ ovEl.innerHTML = ''; openMap(); };
   $('pUnlock').onclick = ()=>{ d.unlockAll = !d.unlockAll; Store.save(); openParent(); };
   $('pName').onclick = ()=>{ const v = prompt('부르는 이름을 적어 주세요', NM()); if (v && v.trim()){ d.name = v.trim(); Store.save(); openParent(); } };
@@ -239,7 +306,7 @@ function startMsg(){
   document.title = `${NM()}이의 곱셈 섬 탐험`;
   const cur = currentIsland();
   $('startMsg').innerHTML = `<b>${NM()}</b> 대장님, ${Store.isl(1).lesson ? `오늘은 <b>${cur}일차 ${ISL[cur].name}</b>을 탐험해요!` : '하루에 섬 하나씩, 6일 동안 탐험해요!'}<br>
-    <span style="font-size:17px">부모님 Tip · 원리 장면에서는 상단 💬 버튼의 질문으로 대화해 주세요. 지도 화면의 🔒 버튼을 길게 누르면 학습 기록을 볼 수 있어요.</span>`;
+    <span style="font-size:17px">부모님 Tip · 원리 장면에서는 상단 💬 버튼의 질문으로 대화해 주세요. 학습 기록은 지도 화면의 🔒 부모님 버튼에서 비밀번호로 열어요.</span>`;
 }
 startMsg();
 $('rename').onclick = ()=>{ const v = prompt('부르는 이름을 적어 주세요', NM()); if (v && v.trim()){ Store.d.name = v.trim(); Store.save(); startMsg(); } };

@@ -165,6 +165,11 @@ async function openPractice(isl, opts={}){
           kp.mark(true); SFX.right(); clearTimers();
           solved = true; resolve(tries === 0 ? 'ok' : 'fix'); return;
         }
+        if (isSloppy(type, v, q.a*q.b)){
+          say(SLOPPY_MSG);
+          setTimeout(()=>{ if (!solved && !revealed && !finding && sg===SG) loop(); }, 400);
+          return;
+        }
         tries++; kp.mark(false); SFX.wrong();
         if (tries === 1){ firstType = type; Store.mistake(type); }
         if (tries >= 3){

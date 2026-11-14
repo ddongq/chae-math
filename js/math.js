@@ -62,6 +62,12 @@ function diagnose(a, b, ans){
   }
   return 'other';
 }
+// 진단되는 실수도 아니고 자릿수부터 크게 다른 답(0, 한 자리 찍기 등)은 '대충 넣은 답'으로 보고
+// 시도 횟수·실수 기록에 넣지 않는다 (0 넣고 바로 정답 → '고쳐서 맞힘'이 되는 길 막기)
+function isSloppy(type, ans, correct){
+  return type === 'other' && (ans === 0 || Math.abs(String(ans).length - String(correct).length) >= 2);
+}
+const SLOPPY_MSG = '답을 끝까지 써 볼까? 공책에 세로셈으로 풀고, 나온 수를 그대로 넣어 줘.';
 const MISTAKE_NAME = {shift:'두 번째 줄 자리 안 맞춤', carry:'곱셈 받아올림 빠뜨림', add:'덧셈 받아올림 빠뜨림', fact:'곱셈구구 실수', zero:'0의 개수 실수', other:'기타 계산 실수'};
 function mistakeMsg(type, a, b){
   const bt = Math.floor(b/10);
