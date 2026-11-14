@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>나눗셈 개념 시안</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  body{background:#F3E7CF}
+  .panel{box-shadow:0 5px 0 rgba(120,80,40,.16)}
+  #cv{position:absolute;left:0;top:0;width:740px;height:565px;border-radius:28px}
+  #lbls{position:absolute;left:0;top:0;width:740px;height:565px;pointer-events:none}
+  .plb{position:absolute;transform:translate(-50%,-50%);min-width:54px;height:40px;padding:0 12px;border-radius:20px;background:#fff;border:2.5px solid #6B4A2E;
+       font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:opacity .3s;white-space:nowrap}
+  .plb.red{border-color:#D9534F;color:#C0392B}
+  #tabs button.on{color:#6B4A2E}
+  /* 세로식 */
+  #ld{position:absolute;left:0;top:0;width:460px;height:565px}
+  .ldg{position:absolute;width:64px;height:64px;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:800;color:#2A2A3C}
+  .ldg.g{color:#14995A}.ldg.b{color:#2F7BEA}.ldg.r{color:#E5484D}.ldg.k{color:#2A2A3C}
+  .ldg.pop{animation:pop .42s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes pop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+  .cband{position:absolute;width:64px;border-radius:14px;transition:opacity .35s;opacity:0}
+  .cband.g{background:#DBF4E5}.cband.b{background:#E3EEFF}.cband.r{background:#FFE3E3}
+  .lline{position:absolute;height:4px;background:#2A2A3C;border-radius:2px;transform-origin:left;transition:transform .4s}
+  #chk{position:absolute;left:0;width:460px;top:470px;text-align:center;font-size:26px;font-weight:800;color:#6B4A2E;opacity:0;transition:opacity .4s}
+  #guide{position:absolute;left:0;top:0;width:120px;height:130px;display:flex;align-items:center;justify-content:center}
+  #guide div{width:104px;height:104px;border-radius:50%;background:#fff;border:3px dashed #C9A97A;display:flex;align-items:center;justify-content:center;
+             font-size:15px;font-weight:800;color:#9A7A55;text-align:center;line-height:1.3}
+  .pill{background:#E5484D}
+  .pill.w{background:#fff;color:#6B4A2E}
+  .pill.opt{background:#fff;color:#2A2A3C;font-size:24px;min-width:110px}
+</style>
+<script type="importmap">{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="stage">
+  <div id="header">
+    <div id="title">➗ 나눗셈 바다<small>개념 학습 시안</small></div>
+    <div id="tabs"></div>
+  </div>
+  <div class="panel pL"><canvas id="cv"></canvas><div id="lbls"></div></div>
+  <div class="panel pR"><div id="ld"></div><div id="chk"></div></div>
+  <div id="bottom">
+    <div id="guide"><div>루퍼드<br>그림 자리</div></div>
+    <div id="bubble"></div>
+    <div id="ctrls"></div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+/* ---------- 화면 맞추기 ---------- */
+const stage = document.getElementById('stage');
+let SCALE = 1;
+function fit(){ const de = document.documentElement; SCALE = Math.min(de.clientWidth/1280, de.clientHeight/800);
+  stage.style.transform = `translate(-50%,-50%) scale(${SCALE})`; if (renderer) sizeRenderer(); }
+addEventListener('resize', fit);
+
+/* ---------- 소리 (아주 작게) ---------- */
+let AC = null;
+const unlock = () => { if (!AC) try { AC = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} };
+function tone(f, d=.08, type='triangle', v=.12, slide=0){
+  if (!AC) return; const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+  o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t+d);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t+d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t+d);
+}
+const SFX = { tok:()=>tone(520,.07,'triangle',.10,380), crack:()=>{tone(900,.05,'square',.05,300);tone(200,.12,'triangle',.12,120);},
+  ding:()=>{tone(880,.18,'sine',.12);setTimeout(()=>tone(1320,.25,'sine',.10),110);}, write:()=>tone(660,.05,'sine',.06) };
+
+/* ---------- 말풍선 · 버튼 ---------- */
+const $ = id => document.getElementById(id);
+const say = html => { $('bubble').innerHTML = '<div>'+html+'</div>'; };
+function buttons(list){ // [{label, cls, val}]
+  const c = $('ctrls'); c.innerHTML = '';
+  return new Promise(res=>list.forEach(o=>{ const b = document.createElement('button'); b.className = 'pill ' + (o.cls||''); b.innerHTML = o.label;
+    b.onclick = ()=>{ unlock(); res(o.val); }; c.appendChild(b); }));
+}
+const clearBtns = () => { $('ctrls').innerHTML = ''; };
+
+/* ---------- three.js 장면 ---------- */
+const W = 740, H = 565, U = 0.26;
+const cv = $('cv');
+let renderer = new THREE.WebGLRenderer({canvas:cv, antialias:true});
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setClearColor(0xFBF4E6);
+function sizeRenderer(){ renderer.setPixelRatio(Math.min(2.5, (devicePixelRatio||1)*SCALE)); renderer.setSize(W, H, false); }
+fit(); sizeRenderer();
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, W/H, .1, 100);
+camera.position.set(0, 11.2, 15.8); camera.lookAt(0, -0.15, -0.55);
+scene.add(new THREE.AmbientLight(0xffffff, 1.05));
+const sun = new THREE.DirectionalLight(0xffffff, 2.1); sun.position.set(-4, 9, 7); sun.castShadow = true;
+Object.assign(sun.shadow.camera, {left:-8, right:8, top:8, bottom:-8}); sun.shadow.mapSize.set(1536,1536); sun.shadow.radius = 4; sun.shadow.bias = -0.0008; sun.shadow.intensity = 0.45;
+scene.add(sun);
+
+// 셀 애니메이션처럼: 명암 두 단계 + 갈색 외곽선
+const grad = new THREE.DataTexture(new Uint8Array([150,150,150,255, 255,255,255,255]), 2, 1); grad.minFilter = grad.magFilter = THREE.NearestFilter; grad.needsUpdate = true;
+const toon = c => new THREE.MeshToonMaterial({color:c, gradientMap:grad});
+const LINE = new THREE.MeshBasicMaterial({color:0x6B4A2E, side:THREE.BackSide});
+function outline(mesh, t=0.06){ const o = new THREE.Mesh(mesh.geometry, LINE); o.scale.setScalar(1+t); o.raycast = ()=>{}; mesh.add(o); return mesh; }
+
+const COL = { ten:new THREE.Color(0x86D3A6), one:new THREE.Color(0x93BDF5), red:new THREE.Color(0xF4A08F) };
+
+// 바닥(종이 책상)
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), toon(0xF6EBD4)); floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+// 나무 쟁반 (수 모형 보관함)
+const TRAY = {x:0, z:-3.6, w:9.2, d:2.3};
+(function tray(){
+  const g = new THREE.Group(), wood = toon(0xDDB07A), woodIn = toon(0xEFD3A8);
+  const base = new THREE.Mesh(new RoundedBoxGeometry(TRAY.w, .12, TRAY.d, 2, .05), woodIn); base.position.y = .06; base.receiveShadow = true; g.add(outline(base, .012));
+  const rim = (w,d,x,z)=>{ const m = new THREE.Mesh(new RoundedBoxGeometry(w,.28,d,2,.05), wood); m.position.set(x,.14,z); m.castShadow = true; m.receiveShadow = true; g.add(outline(m,.03)); };
+  rim(TRAY.w, .16, 0, -TRAY.d/2); rim(TRAY.w, .16, 0, TRAY.d/2); rim(.16, TRAY.d, -TRAY.w/2, 0); rim(.16, TRAY.d, TRAY.w/2, 0);
+  g.position.set(TRAY.x, 0, TRAY.z); scene.add(g);
+})();
+const TRAY_Y = .12 + U/2;
+
+// 접시
+const plateGeo = new THREE.LatheGeometry([[0,0],[.95,0],[1.05,.02],[1.24,.12],[1.31,.16],[1.29,.18],[1.2,.16],[1.0,.07],[0,.07]].map(([x,y])=>new THREE.Vector2(x,y)), 56);
+const PLATE_Y = .07 + U/2;
+let plates = [];
+
+// 수 모형
+const cubeGeo = new RoundedBoxGeometry(U*.97, U*.97, U*.97, 2, U*.16);
+function makeCube(color){ const m = new THREE.Mesh(cubeGeo, toon(color.clone())); m.castShadow = true; return outline(m, .07); }
+function makeRod(){ const g = new THREE.Group(); g.userData.cubes = [];
+  for (let k=0;k<10;k++){ const c = makeCube(COL.ten); c.position.z = (k-4.5)*U; g.add(c); g.userData.cubes.push(c); }
+  return g; }
+
+/* ---------- 움직임 ---------- */
+const tweens = new Set();
+let SPEED = 1;
+const ease = p => p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+let clockOff = 0; const now = () => performance.now() + clockOff;
+const tw = (dur, f) => new Promise(res=>tweens.add({t0:now(), dur:dur/SPEED, f, res}));
+const sleep = ms => tw(ms, ()=>{});
+function flyTo(obj, to, dur=560, h=1.1){
+  const from = obj.position.clone();
+  return tw(dur, p=>{ const e = ease(p); obj.position.lerpVectors(from, to, e); obj.position.y += Math.sin(Math.PI*e)*h; });
+}
+function recolor(meshes, toC, dur=420){ const froms = meshes.map(m=>m.material.color.clone()); return tw(dur, p=>meshes.forEach((m,i)=>m.material.color.lerpColors(froms[i], toC, p))); }
+function frame(){
+  const n = now();
+  for (const t of [...tweens]){ const p = Math.min(1, (n-t.t0)/t.dur); t.f(p); if (p>=1){ tweens.delete(t); t.res(); } }
+  renderer.render(scene, camera); updateLabels();
+}
+function loop(){ frame(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+// 점검용: 화면이 가려져도 시간을 앞으로 돌려 확인 (T.step(초))
+window.T = { async step(sec){ for (let t=0; t<sec*1000; t+=16){ clockOff += 16; frame(); for (let k=0;k<6;k++) await Promise.resolve(); } } };
+
+/* ---------- 접시 위 숫자 라벨 ---------- */
+const lbls = $('lbls'); let plateLbls = [], extraLbl = null;
+const v3 = new THREE.Vector3();
+function place(el, x, y, z){ v3.set(x,y,z).project(camera); el.style.left = ((v3.x+1)/2*W)+'px'; el.style.top = ((1-v3.y)/2*H)+'px'; }
+function updateLabels(){
+  plates.forEach((p,i)=>{ if (plateLbls[i]) place(plateLbls[i], p.position.x, 0, p.position.z+1.75); });
+  if (extraLbl) place(extraLbl, extraLbl._x, 0, extraLbl._z);
+}
+
+/* ---------- 세로식 (오른쪽) ---------- */
+const LD = { cx:{d:144, t:212, o:280}, y:{Q:74, D:142, S1:210, R1:278, S2:346, R2:414}, line1:244, line2:380 };
+const ld = $('ld');
+function ldReset(){
+  ld.innerHTML = '';
+  ['t','o'].forEach(c=>{ const b = document.createElement('div'); b.className = 'cband'; b.id = 'band'+c; css(b, {left:(LD.cx[c]-30)+'px', width:'60px', top:'42px', height:'406px'}); ld.appendChild(b); });
+  // 모눈: 칸 68, 숫자 칸 가운데에 맞춤
+  let h = ''; for (let x=42; x<=460; x+=68) h += `<line x1="${x}" y1="0" x2="${x}" y2="565"/>`;
+  for (let y=40; y<=565; y+=68) h += `<line x1="0" y1="${y}" x2="460" y2="${y}"/>`;
+  ld.insertAdjacentHTML('beforeend', `<svg width="460" height="565" style="position:absolute;left:0;top:0"><g stroke="#EFE5D3" stroke-width="2">${h}</g>
+    <path d="M178 108 Q198 142 178 176 M178 108 L330 108" fill="none" stroke="#2A2A3C" stroke-width="4" stroke-linecap="round"/>
+    <path id="arrow" d="M304 162 C 328 196, 328 236, 304 262" fill="none" stroke="#E5484D" stroke-width="3" stroke-dasharray="6 6" opacity="0" style="transition:opacity .4s"/></svg>`);
+  $('chk').style.opacity = 0;
+}
+const css = (e, o) => Object.assign(e.style, o);
+const jo = (n, a, b) => [0,1,3,6,7,8].includes(n%10) ? a : b;   // 숫자 뒤 을/를
+function dg(col, row, txt, cls='k', anim=true){
+  const d = document.createElement('div'); d.className = 'ldg '+cls+(anim?' pop':''); d.textContent = txt;
+  css(d, {left:LD.cx[col]+'px', top:LD.y[row]+'px'}); ld.appendChild(d); if (anim) SFX.write(); return d;
+}
+function lline(y, x0, x1){ const l = document.createElement('div'); l.className = 'lline'; css(l, {left:x0+'px', top:(y-2)+'px', width:(x1-x0)+'px', transform:'scaleX(0)'}); ld.appendChild(l); requestAnimationFrame(()=>requestAnimationFrame(()=>l.style.transform='scaleX(1)')); }
+function band(col, cls){ ['t','o'].forEach(c=>{ const b = $('band'+c); if (!b) return; if (c===col){ b.className = 'cband '+cls; b.style.opacity = 1; } else b.style.opacity = 0; }); }
+
+/* ---------- 문제 ---------- */
+const PROBS = [[52,4],[53,4],[75,3],[84,4]];
+let GEN = 0;
+function buildTabs(cur){
+  const t = $('tabs'); t.innerHTML = '';
+  PROBS.forEach(([a,d])=>{ const b = document.createElement('button'); b.textContent = `${a} ÷ ${d}`; if (a===cur[0] && d===cur[1]) b.className = 'on';
+    b.onclick = ()=>{ unlock(); run(a, d); }; t.appendChild(b); });
+}
+
+let rods = [], cubes = [];
+function clearScene(){
+  [...rods, ...cubes, ...plates].forEach(o=>o.parent && o.parent.remove(o));
+  rods = []; cubes = []; plates = []; tweens.clear(); lbls.innerHTML = ''; plateLbls = []; extraLbl = null;
+}
+const traySlotRod = i => new THREE.Vector3(-4.0 + i*0.42, TRAY_Y, TRAY.z);
+const traySlotCube = k => new THREE.Vector3(0.35 + (k%11)*0.35, TRAY_Y, TRAY.z - 0.7 + Math.floor(k/11)*0.38);
+
+async function run(a, d){
+  const g = ++GEN; clearScene(); buildTabs([a,d]); ldReset(); clearBtns();
+  const alive = () => g === GEN;
+  const T = Math.floor(a/10), O = a%10, q1 = Math.floor(T/d), r1 = T%d, ones = r1*10+O, q2 = Math.floor(ones/d), r2 = ones%d, q = q1*10+q2;
+
+  // 쟁반에 수 모형
+  for (let i=0;i<T;i++){ const r = makeRod(); r.position.copy(traySlotRod(i)); scene.add(r); rods.push(r); }
+  for (let k=0;k<O;k++){ const c = makeCube(COL.one); c.position.copy(traySlotCube(k)); scene.add(c); cubes.push(c); }
+  // 접시
+  const sp = Math.min(3.05, 12.2/d);
+  for (let i=0;i<d;i++){ const p = new THREE.Mesh(plateGeo, toon(0xFFFFFF)); p.receiveShadow = true; outline(p, .025);
+    p.position.set((i-(d-1)/2)*sp, 0, 1.4); p.scale.set(.98, 1, .98); scene.add(p); plates.push(p);
+    const l = document.createElement('div'); l.className = 'plb'; l.style.opacity = 0; l.textContent = '0'; lbls.appendChild(l); plateLbls.push(l); }
+  const cnt = plates.map(()=>({t:0, o:0}));
+  const setCnt = i => { plateLbls[i].style.opacity = 1; plateLbls[i].textContent = String(cnt[i].t*10 + cnt[i].o); };
+
+  // 세로식 처음
+  dg('d','D',String(d),'k',false); dg('t','D',String(T),'g',false); dg('o','D',String(O),'b',false);
+
+  say(`<b>${a}</b>${jo(a,'을','를')} 접시 <b>${d}</b>개에 똑같이 나누어 볼까?<br><span style="font-size:20px;color:#8A6A4A">십막대 ${T}개와 낱개 ${O}개가 있어. 큰 것부터 나눠!</span>`);
+  if (await buttons([{label:'시작 ▶', val:1}]) && !alive()) return;
+
+  /* ① 십막대 나누기 */
+  band('t','g');
+  say(`십막대 <b class=g>${T}개</b>를 접시 <b>${d}</b>개에 똑같이 나누면,<br>한 접시에 <b>몇 개씩</b> 줄 수 있을까?`);
+  await ask([q1-1, q1, q1+1].filter(x=>x>=1), q1,
+    v => v > q1 ? `${v}개씩이면 십막대가 ${v*d}개 필요해. ${T}개뿐이라 모자라!` : `${v}개씩 주고도 ${T - v*d}개가 남아. 한 바퀴 더 줄 수 있어!`, alive);
+  if (!alive()) return;
+  clearBtns(); say(`맞아! 한 개씩 차례로 나눠 줄게.`);
+  let ri = 0;
+  for (let r=0;r<q1;r++) for (let i=0;i<d;i++){
+    const rod = rods[ri++]; const P = plates[i].position;
+    const to = new THREE.Vector3(P.x - 0.42 - (q1-1)*0.17 + r*0.34, PLATE_Y + 4.5*U, P.z - 0.1);
+    SFX.tok(); const dur = r===0 ? 620 : 460;
+    await Promise.all([flyTo(rod, to, dur, 1.6), tw(dur, p=>{ rod.rotation.x = Math.PI/2*ease(p); })]);
+    if (!alive()) return; cnt[i].t++; setCnt(i);
+  }
+  dg('t','Q',String(q1),'g'); await sleep(350);
+  dg('t','S1',String(q1*d),'g'); await sleep(250); lline(LD.line1, 182, 244); await sleep(350);
+  if (!alive()) return;
+  const left = rods.slice(ri);
+  if (r1){
+    dg('t','R1',String(r1),'r'); await recolor(left.flatMap(r=>r.userData.cubes), COL.red, 500);
+    say(`한 접시에 <b class=g>${q1}개</b>씩! 몫의 십의 자리는 <b class=g>${q1}</b>.<br>그런데 십막대 <b class=r>${r1}개</b>가 남았어. 이걸 어떻게 하지?`);
+    const v = await buttons([{label:'낱개로 바꿔요', cls:'opt', val:'s'}, {label:'그냥 둬요', cls:'opt', val:'k'}]); if (!alive()) return;
+    if (v==='k'){ say(`그대로 두면 똑같이 나누지 못한 게 너무 많아! 십막대 1개는 <b>낱개 10개</b>와 같으니까 바꿔서 나눠 보자.`); await buttons([{label:'바꿔 보기 ▶', val:1}]); if (!alive()) return; }
+    clearBtns();
+    /* ② 내림: 십막대 → 낱개 10개 */
+    say(`<b class=r>십막대 ${r1}개 = 낱개 ${r1*10}개</b>! 탁, 풀어 볼게.`);
+    let k0 = O;
+    for (const rod of left){
+      await Promise.all([flyTo(rod, new THREE.Vector3(-2.2, 1.9, -1.3), 620, .8), tw(620, p=>{ rod.rotation.x = Math.PI/2*ease(p); })]); if (!alive()) return;
+      await tw(300, p=>{ rod.rotation.z = Math.sin(p*Math.PI*6)*.07*(1-p); }); SFX.crack();
+      const cs = rod.userData.cubes;
+      await tw(420, p=>cs.forEach((c,k)=>{ c.position.z = (k-4.5)*U*(1+0.6*ease(p)); }));
+      await recolor(cs, COL.one, 380); if (!alive()) return;
+      cs.forEach(c=>scene.attach(c)); scene.remove(rod);
+      await Promise.all(cs.map((c,k)=>sleep(k*45).then(()=>flyTo(c, traySlotCube(k0+k), 520, .5))));
+      cubes.push(...cs); k0 += 10;
+    }
+    if (!alive()) return;
+  } else {
+    say(`한 접시에 <b class=g>${q1}개</b>씩, 남은 십막대는 없어!`); await sleep(600);
+  }
+  // 일의 자리 내려 쓰기
+  $('arrow').style.opacity = 1; dg('o','R1',String(O),'b'); if (r1) {}
+  await sleep(450);
+  band('o','b');
+  say(`낱개가 모두 <b class=b>${ones}개</b>! 세로식에서는 <b class=b>${O}</b>${jo(O,'을','를')} 내려 써서 <b class=b>${ones}</b>.<br>이제 낱개 ${ones}개를 접시 ${d}개에 똑같이 나누면 한 접시에 몇 개씩?`);
+  /* ③ 낱개 나누기 */
+  await ask([q2-1, q2, q2+1].filter(x=>x>=0), q2,
+    v => v > q2 ? `${v}개씩이면 ${v*d}개가 필요해. ${ones}개뿐이야!` : `${v}개씩 주면 ${ones - v*d}개가 남아. 더 줄 수 있어!`, alive);
+  if (!alive()) return;
+  clearBtns(); say(`좋아! 이번에도 한 개씩 차례로.`);
+  let ci = 0;
+  for (let r=0;r<q2;r++) for (let i=0;i<d;i++){
+    const c = cubes[ci++]; const P = plates[i].position;
+    const to = new THREE.Vector3(P.x + 0.12 + (r%3)*0.31, PLATE_Y, P.z - 0.3 + Math.floor(r/3)*0.31);
+    SFX.tok(); await flyTo(c, to, Math.max(240, 420 - (r*d+i)*18), .7); if (!alive()) return; cnt[i].o++; setCnt(i);
+  }
+  dg('o','Q',String(q2),'b'); await sleep(300);
+  const p2 = q2*d; if (p2>=10) dg('t','S2',String(Math.floor(p2/10)),'b'); dg('o','S2',String(p2%10),'b'); await sleep(250);
+  lline(LD.line2, 182, 312); await sleep(350);
+  dg('o','R2',String(r2), r2 ? 'r' : 'k'); band(null);
+  const rest = cubes.slice(ci);
+  if (r2){
+    await recolor(rest, COL.red, 450);
+    // 남은 것은 빈 쟁반 가운데로 모아 보여 주기
+    const RX = 0, RZ = TRAY.z + 0.2;
+    await Promise.all(rest.map((c,k)=>sleep(k*80).then(()=>flyTo(c, new THREE.Vector3(RX + (k - (rest.length-1)/2)*0.36, TRAY_Y, RZ), 560, .8))));
+    extraLbl = document.createElement('div'); extraLbl.className = 'plb red'; extraLbl.textContent = `남은 것 ${r2}`; extraLbl._x = RX; extraLbl._z = RZ - 1.9; lbls.appendChild(extraLbl);
+  }
+  if (!alive()) return;
+  SFX.ding();
+  say(r2 ? `한 접시에 <b>${q}</b>개씩, <b class=r>${r2}개</b>가 남아. 남은 것이 접시 수 <b>${d}</b>보다 작으니 더는 못 나눠!<br><b>${a} ÷ ${d} = ${q} … ${r2}</b>`
+         : `한 접시에 <b>${q}</b>개씩, 남는 것 없이 똑같이 나눴어!<br><b>${a} ÷ ${d} = ${q}</b>`);
+  const v = await buttons([{label:'맞는지 확인 ▶', val:1}]); if (!alive()) return; clearBtns();
+  /* ④ 확인: 다시 모으기 */
+  const onPlates = [...rods.slice(0, q1*d), ...cubes.slice(0, ci)];
+  await Promise.all(plates.map((p,i)=>tw(500, e=>{ p.scale.setScalar(1 + .06*Math.sin(Math.PI*e)); })));
+  $('chk').innerHTML = r2 ? `확인: ${d} × ${q} + ${r2} = ${a}` : `확인: ${d} × ${q} = ${a}`; $('chk').style.opacity = 1; SFX.write();
+  say(r2 ? `<b>${q}</b>개짜리 접시가 <b>${d}</b>개면 ${d*q}, 남은 <b class=r>${r2}</b>를 더하면 <b>${a}</b>! 처음 수와 같으니 맞았어.`
+         : `<b>${q}</b>개짜리 접시가 <b>${d}</b>개면 <b>${d} × ${q} = ${a}</b>. 처음 수와 같으니 맞았어!`);
+  await buttons([{label:'🔁 다시 보기', cls:'w', val:1}]).then(()=>alive() && run(a, d));
+}
+async function ask(opts, ans, wrongMsg, alive){
+  let tries = 0;
+  while (alive()){
+    const v = await buttons(opts.map(x=>({label:`${x}개`, cls:'opt', val:x})));
+    if (!alive()) return;
+    if (v === ans){ SFX.ding(); return; }
+    tries++; say(wrongMsg(v) + (tries>=2 ? `<br>정답은 <b>${ans}개</b>야!` : ''));
+    if (tries>=2){ await sleep(1400); return; }
+  }
+}
+run(52, 4);
+</script>
+</body>
+</html>
