@@ -40,7 +40,7 @@ const SEA_DEF = {
         master:'나눗셈 마스터', crown:'나눗셈 별', what:'<b>(세 자리 수) ÷ (한 자리 수)</b> 나머지가 있는 나눗셈'},
 };
 // 나눗셈 바다는 다 만들 때까지 주소에 ?div 를 붙였을 때만 보인다
-const DIV_OPEN = /[?&]div\b/.test(location.search) || (()=>{ try { return localStorage.getItem('chae_div_open') === '1'; } catch(e){ return false; } })();
+const DIV_OPEN = true;   // 나눗셈 바다 공개 (2026-11-14)
 let ISL = ISL_MUL, PHASES = PHASES_MUL;
 const SEAD = () => SEA_DEF[Store.sea];
 function setSea(sea){
