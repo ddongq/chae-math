@@ -4,7 +4,7 @@
 let SG = 0;                       // 화면 세대 (화면을 바꾸면 이전 흐름은 멈춤)
 const TIMERS = [];
 function clearTimers(){ while (TIMERS.length) clearInterval(TIMERS.pop()); }
-const PRAISE = ['정답! 👏', '최고야!', '완벽해!', '역시 탐험대장!', '멋져, {n} 대장님!', '척척박사!'];
+const PRAISE = ['👏 정답!', '최고야!', '완벽해!', '역시 탐험대장!', '멋져, {n} 대장님!', '척척박사!'];
 const praise = () => PRAISE[Math.floor(Math.random()*PRAISE.length)];
 
 /* ---------- 키패드 ---------- */

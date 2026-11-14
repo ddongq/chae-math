@@ -189,12 +189,24 @@ const IN = [{opacity:0},{opacity:1}];
 const sleep = ms => new Promise(r=>setTimeout(r, ms));
 const rnd = (a, b) => a + Math.floor(Math.random()*(b-a+1));
 const fmt = n => n.toLocaleString('ko-KR');
-// 숫자 뒤 조사: J(6,'은','는') → '은'  (받침 있는 숫자: 0 1 3 6 7 8)
-const J = (n, a, b) => { const d = String(n).replace(/[^0-9]/g,''); return '013678'.includes(d[d.length-1]) ? a : b; };
+// 조사 고르기: J(6,'은','는') → '은', J('나침반','을','를') → '을'
+//   끝 글자가 숫자면 숫자 읽기(받침 있는 숫자: 0 1 3 6 7 8), 한글이면 받침 유무로 고른다 (태그·이모지·공백은 건너뜀)
+const J = (n, a, b) => {
+  const t = String(n).replace(/<[^>]*>/g, '').replace(/[^0-9가-힣]/g, ''), c = t[t.length-1];
+  if (!c) return b;
+  if (/[0-9]/.test(c)) return '013678'.includes(c) ? a : b;
+  return (c.charCodeAt(0) - 0xAC00) % 28 ? a : b;
+};
+
+// '으로/로': 숫자 3·6·0(삼·육·영)과 받침 있는 글자(ㄹ 받침 제외) 뒤에는 '으로'
+const JRO = n => { const t = String(n).replace(/[^0-9가-힣]/g, ''), c = t[t.length-1] || '';
+  if (/[0-9]/.test(c)) return '360'.includes(c) ? '으로' : '로';
+  const f = c ? (c.charCodeAt(0) - 0xAC00) % 28 : 0; return f && f !== 8 ? '으로' : '로'; };
 
 // 말풍선: 한 문장이 끝나면 줄바꿈 + 넘치면 글자 크기 자동 축소
 function breakSentences(h){
-  return h.replace(/([.!?…])((?:<\/[a-z]+>)*)\s+(?=[^\s<]|<(?!br))/g, (m, p, tags) => p + tags + '<br>');
+  // '12 … 1'처럼 나머지를 쓰는 '…' 뒤 숫자는 줄을 바꾸지 않는다
+  return h.replace(/([.!?…])((?:<\/[a-z]+>)*)\s+(?=[^\s<]|<(?!br))/g, (m, p, tags, i, s) => p === '…' && /^(?:<[^>]+>)*\d/.test(s.slice(i + m.length)) ? m : p + tags + '<br>');
 }
 function fitBubble(){
   const b = $('bubble'), inner = b.firstElementChild; if (!inner) return;

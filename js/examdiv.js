@@ -22,7 +22,7 @@ const CAT_TIP = {
   idea: '나눗셈은 <b>곱셈을 거꾸로</b> 한 것! 나누는 수의 단에서 몫을 찾아요.',
   cmp:  '몫의 크기는 <b>몇십, 몇백으로 어림</b>해서 먼저 비교해 봐요.',
   word: '"똑같이 나누면", "몇씩 묶으면"을 찾아 <b>나눗셈 식</b>을 세우고, 나머지를 어떻게 할지 생각해요.',
-  think:'숫자카드는 <b>나누는 수를 가장 작게</b>, 나뉘는 수를 가장 크게 하면 몫이 커져요.',
+  think:'숫자카드는 <b>나누는 수를 가장 작게</b>, 나누어지는 수를 가장 크게 하면 몫이 커져요.',
 };
 const Q = (a, d) => Math.floor(a/d), R = (a, d) => a % d;
 const exp = (a, d) => { const q = Q(a,d), r = R(a,d); return `${a} ÷ ${d} = <b>${q}</b>${r ? ` … <b>${r}</b>` : ''}<br><span class=ps>확인: ${d} × ${q}${r ? ` + ${r}` : ''} = ${a}</span>`; };
@@ -108,16 +108,16 @@ const F = {
   d5word: (r) => { const [a, d] = g4(r, r.int(0,1), false); return shareQ(5, r, a, d); },
   d5word2: (r) => { const [a, d] = g2(r); return remWordQ(5, r, a, d); },
   d5est: (r) => { const d = r.int(2,8), a = r.until(()=>r.int(100,999), x=>Q(x,d) >= 12);
-    const near = Math.round(Q(a,d)/10)*10, ch = [near/10, near, near*10].map(v=>`약 ${v}`);
-    return choiceQ(5, 'cmp', `<b>${a} ÷ ${d}</b>의 몫은 약 얼마일까요?`, ch, 1, `${a} ÷ ${d} 어림`, `${a} ÷ ${d} = ${Q(a,d)}${R(a,d) ? ` … ${R(a,d)}` : ''} → 약 <b>${near}</b>`); },
+    const near = Math.round(Q(a,d)/10)*10, ord = r.shuffle([0,1,2]), ch = ord.map(i=>[near/10, near, near*10][i]).map(v=>`약 ${v}`);
+    return choiceQ(5, 'cmp', `<b>${a} ÷ ${d}</b>의 몫은 약 얼마일까요?`, ch, ord.indexOf(1), `${a} ÷ ${d} 어림`, `${a} ÷ ${d} = ${Q(a,d)}${R(a,d) ? ` … ${R(a,d)}` : ''} → 약 <b>${near}</b>`); },
   d5missing: (r) => { const [a, d] = g1(r, 2), s = String(a), k = r.int(0,1), ans = +s[k], shown = s.split('').map((c,i)=>i===k ? BOX : c).join('');
-    return qq({u:5, cat:'think', html: ask('□ 안에 알맞은 숫자를 써넣으세요.') + big(`${shown} ÷ ${d} = ${a/d}`), ans, brief:`${shown.replace(/<[^>]+>/g,'□')} ÷ ${d}`, exp:`${d} × ${a/d} = ${a} 이므로 □ = <b>${ans}</b>`}); },
+    return qq({u:5, cat:'think', html: ask('□ 안에 알맞은 숫자를 써넣으세요.') + big(`${shown} ÷ ${d} = ${a/d}`), ans, brief:`${s.split('').map((c,i)=>i===k ? '□' : c).join('')} ÷ ${d}`, exp:`${d} × ${a/d} = ${a} 이므로 □ = <b>${ans}</b>`}); },
   d5cards: (r, small) => {
     const ds = r.shuffle([2,3,4,5,6,7,8,9]).slice(0,4).sort((x,y)=>x-y), want = small ?? (r() < .5);
     const cand = []; for (const p of perms4()){ const a = +(ds[p[0]]+''+ds[p[1]]+ds[p[2]]), d = ds[p[3]]; cand.push([a, d, Q(a,d)]); }
     const best = cand.reduce((b,c)=>(want ? c[2] < b[2] : c[2] > b[2]) ? c : b);
-    return qq({u:5, cat:'think', html: ask(`숫자카드 <b>${ds.join(', ')}</b>를 한 번씩 써서 (세 자리 수) ÷ (한 자리 수)를 만들 때, 몫이 가장 <b>${want ? '작은' : '큰'}</b> 나눗셈의 <b>몫</b>을 구해 보세요.`),
-      ans:best[2], brief:`숫자카드 ${want ? '가장 작은' : '가장 큰'} 몫`, exp:`나누는 수를 가장 ${want ? '크게' : '작게'}, 나뉘는 수를 가장 ${want ? '작게' : '크게'}<br>${best[0]} ÷ ${best[1]} = <b>${best[2]}</b>${R(best[0],best[1]) ? ` … ${R(best[0],best[1])}` : ''}`});
+    return qq({u:5, cat:'think', html: ask(`숫자카드 <b>${ds.join(', ')}</b>${J(ds[ds.length-1],'을','를')} 한 번씩 써서 (세 자리 수) ÷ (한 자리 수)를 만들 때, 몫이 가장 <b>${want ? '작은' : '큰'}</b> 나눗셈의 <b>몫</b>을 구해 보세요.`),
+      ans:best[2], brief:`숫자카드 ${want ? '가장 작은' : '가장 큰'} 몫`, exp:`나누는 수를 가장 ${want ? '크게' : '작게'}, 나누어지는 수를 가장 ${want ? '작게' : '크게'}<br>${best[0]} ÷ ${best[1]} = <b>${best[2]}</b>${R(best[0],best[1]) ? ` … ${R(best[0],best[1])}` : ''}`});
   },
 };
 function perms4(){ const out = [], a = [0,1,2,3]; const go = (k)=>{ if (k === 4){ out.push([...a]); return; } for (let i=k;i<4;i++){ [a[k],a[i]] = [a[i],a[k]]; go(k+1); [a[k],a[i]] = [a[i],a[k]]; } }; go(0); return out; }

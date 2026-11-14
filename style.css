@@ -427,3 +427,4 @@ body.paper{background-image:var(--paper),radial-gradient(circle at 80% 0%,rgba(2
 .dvout{position:absolute;left:0;top:290px;width:1220px;text-align:center;font-size:40px;font-weight:800;color:var(--ink)}
 .dvhand{position:absolute;left:0;top:380px;width:1220px;display:flex;justify-content:center;gap:22px}
 .dvhand .ncard{position:relative}
+.status .wpst{font-size:15px;line-height:1.35;font-weight:700}

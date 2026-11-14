@@ -18,8 +18,8 @@ function divModel(a, d){
   return {a, d, ds, n, steps, q:Math.floor(a/d), r:a%d, startCol:steps[0].i};
 }
 
-/* 세로식에 쓰는 자리: 칸 = {row, col, txt, role}  (col 0..n-1 = 나뉘는 수의 자리, 왼쪽부터)
-   row 0 = 몫, row 1 = 나뉘는 수, row 2부터 = (곱, 뺀 수) 반복. 몫 가운데 0이면 곱 줄을 쓰지 않고 바로 내려 쓴다. */
+/* 세로식에 쓰는 자리: 칸 = {row, col, txt, role}  (col 0..n-1 = 나누어지는 수의 자리, 왼쪽부터)
+   row 0 = 몫, row 1 = 나누어지는 수, row 2부터 = (곱, 뺀 수) 반복. 몫 가운데 0이면 곱 줄을 쓰지 않고 바로 내려 쓴다. */
 function divLayout(a, d){
   const M = divModel(a, d), cells = [], lines = [];
   const put = (row, endCol, val, role, step) => { const s = String(val); for (let k=0;k<s.length;k++) cells.push({row, col:endCol - (s.length-1-k), txt:s[k], role, step}); };
@@ -56,7 +56,7 @@ function divDiagnose(a, d, q, r){
   if (q === Q && rr === R) return 'ok';
   if (q*d + rr === a && rr >= d) return 'rem';                        // 한 번 더 나눌 수 있었음
   const qs = String(Q), noZero = Number(qs.replace(/0/g, ''));
-  if (qs.slice(1).includes('0') && q === noZero) return 'zero';
+  if (qs.slice(1, -1).includes('0') && q === noZero) return 'zero';     // 몫 '가운데' 0만 (끝자리 0을 빠뜨린 건 아래 '내려쓰기'로)
   if (q === Q) return 'sub';                                            // 몫은 맞고 나머지만 틀림
   if (String(q).length < qs.length && Q.toString().startsWith(String(q))) return 'down';
   const a1 = String(q).padStart(qs.length, '0');

@@ -324,11 +324,14 @@ const TOWER_SVG = `<svg viewBox="0 0 80 110" width="80" height="110" style="over
    등대 입구 — 단원평가 · 소단원 평가 · 문제은행 · 오답 노트
    ========================================================= */
 let BANK = {units:[1,2,3,4,5], n:10};
+// 보던 시험은 바다마다 따로 저장 (곱셈: cur, 나눗셈: curDiv)
+const CUR_KEY = sea => sea === 'div' ? 'curDiv' : 'cur';
 function openTower(tab='unit'){
   resetScreen();
   const E = ES(), sea = Store.sea; examSea(sea);
   const NOTE = E.note.filter(x=>(x.sea || 'mul') === sea);
-  const cur = E.cur && (E.cur.spec.sea || 'mul') === sea ? E.cur : null;
+  if (E.cur && E.cur.spec.sea === 'div'){ E.curDiv = E.cur; E.cur = null; Store.save(); }   // 예전에 한 칸에 저장된 나눗셈 시험 옮기기
+  const cur = E[CUR_KEY(sea)] || null;
   $('bMap').style.display = '';
   $('title').innerHTML = `🗼 시험 등대<small>${SEA_WORD()} 단원</small>`;
   const tabs = $('tabs'); tabs.innerHTML = '';
@@ -431,7 +434,7 @@ function startExam(spec, resume){
   const sg = SG, E = ES(), ex = buildExam(spec), N = ex.qs.length;
   const S = {i:0, ans: resume ? [...resume.ans] : Array(N).fill(null), ink:[], used: resume ? resume.used : 0, t0: Date.now()};
   const elapsed = () => S.used + (Date.now() - S.t0)/1000;
-  const saveCur = () => { E.cur = {spec, ans:S.ans, used: Math.round(elapsed())}; Store.save(); };
+  const saveCur = () => { E[CUR_KEY(spec.sea)] = {spec, ans:S.ans, used: Math.round(elapsed())}; Store.save(); };
   saveCur();
 
   $('bMap').style.display = '';
@@ -493,7 +496,7 @@ function startExam(spec, resume){
     // 안 푼(빈) 문제는 오답 노트에 넣지 않는다 — 빈 시험지로 노트를 채우는 길 막기
     ex.qs.forEach((q,k)=>{ if (!res[k] && S.ans[k] !== null && !E.note.some(x=>x.html === q.html)) E.note.push({...q, from:ex.title, sea:Store.sea, addedAt:Date.now()}); });
     while (E.note.length > 80) E.note.shift();
-    E.cur = null; Store.save();
+    E[CUR_KEY(spec.sea)] = null; Store.save();
     safe(showGrading)({ex, ans:S.ans, res, ok, score, used, diag});
   }
   say(`${ex.title} 시작! 문제는 <b>${N}개</b>, 시간은 <b>${ex.limit/60}분</b>이야.<br>위의 번호를 누르면 다른 문제로 갈 수 있어. 다 풀면 <b>📮 제출</b>!`);
@@ -605,7 +608,7 @@ async function retryWrong(list, back){
   const nav = $('tabs'); nav.innerHTML = ''; nav.className = 'qnav';
   const nb = list.map((_,k)=>btn('', String(k+1), ()=>{}, nav));
   const {bd, paper, st, area, sum} = examScreen();
-  let okN = 0;
+  let okN = 0, rmN = 0;   // rmN: 실제로 오답 노트에서 뺀 문제 (안 푼 문제는 노트에 없음)
   for (let i = 0; i < N; i++){
     const q = list[i];
     nb.forEach((b,k)=>b.classList.toggle('on', k === i));
@@ -616,14 +619,16 @@ async function retryWrong(list, back){
     sum.innerHTML = `맞힌 문제 <b>${okN}</b>`;
     say('다시 도전! 이번엔 천천히, 공책 칸에 써 가며 풀어 봐.');
     setCtrls();
-    let tries = 0;
+    let tries = 0, lastWrong = null, lastT = 0;
     const outcome = await new Promise(res=>{
       const check = (v, b) => {
         if (v === '' || v === null || v === undefined) return;
+        // 빠른 두 번 누르기·같은 오답 다시 누르기로 기회를 한꺼번에 쓰지 않게
+        if (Date.now() - lastT < 600 || (tries && String(v) === String(lastWrong))) return;
         const right = isRight(q, v);
         if (q.kind === 'num') ui.mark(right); else { b.classList.remove('on'); b.classList.add(right ? 'ok' : 'no'); }
         if (right){ SFX.right(); if (q.kind !== 'num') ui.box.dataset.lock = 1; else ui.locked = true; res('ok'); return; }
-        SFX.wrong(); tries++;
+        SFX.wrong(); tries++; lastWrong = v; lastT = Date.now();
         if (tries === 1){
           const dt = (q.cat === 'calc' && q.sol) ? (q.sol.div ? (q.ask === 'r' ? 'sub' : divDiagnose(q.sol.a, q.sol.d, Number(v), null)) : (q.sol.a < 100 ? diagnose(q.sol.a, q.sol.b, Number(v)) : 'other')) : 'other';
           const tip = dt !== 'other' && dt !== 'ok' ? (q.sol.div ? divMistakeMsg(dt, q.sol.a, q.sol.d) : mistakeMsg(dt, q.sol.a, q.sol.b)) : '';
@@ -636,9 +641,10 @@ async function retryWrong(list, back){
     nb[i].classList.add(outcome === 'ok' ? 'ok' : 'no');
     if (outcome === 'ok'){
       okN++; sum.innerHTML = `맞힌 문제 <b>${okN}</b>`;
+      const had = E.note.some(x=>x.html === q.html); if (had) rmN++;
       E.note = E.note.filter(x=>x.html !== q.html); Store.save();
       SFX.fanfare(); gemFly(1000, 200);
-      say(`${praise()} 정답은 <b>${ansText(q, q.ans)}</b>! 오답 노트에서 뺐어.`);
+      say(`${praise()} 정답은 <b>${ansText(q, q.ans)}</b>!${had ? ' 오답 노트에서 뺐어.' : ''}`);
     } else {
       say(`정답은 <b>${ansText(q, q.ans)}</b>! 풀이를 같이 보자.`);
       area.innerHTML = ''; KEYPAD = null;
@@ -647,7 +653,7 @@ async function retryWrong(list, back){
     await new Promise(res=>{
       const showVert = q.sol ? btn('pill w sm', q.sol.div ? '👀 세로식 풀이' : '👀 세로셈 풀이', async ()=>{
         showVert.disabled = true; paper.style.display = 'none'; bd.clearInk();
-        if (q.sol.div){ const db = bd._div = new DivBoard({pen:true}); db.setProblem(q.sol.a, q.sol.d); await db.reveal(220); return; }   // 나눗셈 세로식 보드를 위에 덮기
+        if (q.sol.div){ const db = bd._div = new DivBoard({pen:true}); db.setProblem(q.sol.a, q.sol.d); try { await db.reveal(220); } catch(e){} return; }   // 나눗셈 세로식 보드를 위에 덮기
         bd.setProblem(q.sol.a, q.sol.b);
         try { await bd.reveal(solStages(q.sol), 220); } catch(e){}
       }) : null;
@@ -657,6 +663,6 @@ async function retryWrong(list, back){
   }
   if (bd._div){ bd._div.destroy(); bd._div.el.remove(); bd._div = null; }
   SFX.ding();
-  say(`다시 풀기 끝! <b>${okN}문제</b>를 맞혀서 오답 노트에서 뺐어.${okN < N ? ' 남은 문제는 오답 노트에서 또 풀 수 있어.' : ' 🎉'}`);
+  say(`다시 풀기 끝! <b>${okN}문제</b>를 맞혔어.${rmN ? ` 오답 노트에서 <b>${rmN}문제</b>를 뺐어.` : ''}${okN < N ? ' 남은 문제는 오답 노트에서 또 풀 수 있어.' : ' 🎉'}`);
   setCtrls(back && back !== 'note' ? btn('pill w sm', '📋 시험 결과', ()=>safe(showGrading)(back, true)) : null, btn('pill sm', '🗼 등대로', ()=>openTower('note')));
 }

@@ -173,8 +173,8 @@ class DivForm {
     const e = mk('ldg '+cls+(anim && !INSTANT ? ' pop' : ''), null, null, txt, null, this.digits);
     css(e, {left:this.cx(col)+'px', top:this.cy(row)+'px', width:this.CS+'px', height:this.CS+'px', fontSize:(this.CS*.74)+'px'}); if (anim) SFX.write && SFX.write(); return e;
   }
-  band(col){ this.bands.innerHTML = ''; if (col === null) return; const b = mk('cband '+COLCLS[this.place(col)], null, null, '', null, this.bands);
-    css(b, {left:(this.cx(col)-this.CS*.46)+'px', width:(this.CS*.92)+'px', top:(this.cy(0)-this.RH*.46)+'px', height:(this.cy(this.L.rows-1)-this.cy(0)+this.RH*.92)+'px'}); }
+  band(col, c0 = col){ this.bands.innerHTML = ''; if (col === null) return; const b = mk('cband '+COLCLS[this.place(col)], null, null, '', null, this.bands);   // c0~col: 앞자리와 합쳐 나눌 때는 두 칸을 함께 비춘다
+    css(b, {left:(this.cx(c0)-this.CS*.46)+'px', width:(this.cx(col)-this.cx(c0)+this.CS*.92)+'px', top:(this.cy(0)-this.RH*.46)+'px', height:(this.cy(this.L.rows-1)-this.cy(0)+this.RH*.92)+'px'}); }
   // step 번째 몫 자리를 다 나눴을 때 쓰는 칸들
   async writeStep(k){
     const cs = this.L.cells.filter(c=>c.step === k && c.row >= 0);
@@ -183,7 +183,7 @@ class DivForm {
       const list = cs.filter(c=>c.role === role); if (!list.length) continue;
       for (const c of list) this.dg(c.col, c.row, c.txt, role === 'q' ? COLCLS[this.place(c.col)] : (role === 'prod' ? COLCLS[this.place(this.M.steps[k].i)] : (role === 'rem' && c.txt !== '0' ? 'r' : (role === 'sub' ? 'r' : 'k'))));
       if (role === 'prod'){ const ln = this.L.lines.find(l=>l.row === list[0].row); if (ln) this.line(ln); }
-      await wait(320);
+      await wait(240);
     }
   }
   line(ln){ const x0 = this.cx(ln.c0) - this.CS*.42, x1 = this.cx(ln.c1) + this.CS*.42, y = this.cy(ln.row) + this.RH*.5;
@@ -193,7 +193,7 @@ class DivForm {
     const c = this.L.cells.find(x=>x.step === k && x.role === 'down'); if (!c) return;
     const x = this.cx(c.col) + this.CS*.36, y0 = this.cy(1) + this.RH*.3, y1 = this.cy(c.row) - this.RH*.3;
     const p = document.createElementNS(NS, 'path'); Object.entries({d:`M${x} ${y0} C ${x+22} ${y0+30}, ${x+22} ${y1-30}, ${x} ${y1}`, fill:'none', stroke:'#E5484D', 'stroke-width':3, 'stroke-dasharray':'6 6'}).forEach(([k,v])=>p.setAttribute(k,v)); this.arrows.appendChild(p);
-    this.dg(c.col, c.row, c.txt, COLCLS[this.place(c.col)]); await wait(380);
+    this.dg(c.col, c.row, c.txt, COLCLS[this.place(c.col)]); await wait(280);
   }
   check(html){ const e = this.box.querySelector('.dvchk'); e.innerHTML = html; css(e, {top:(this.cy(this.L.rows) + 4)+'px'}); e.classList.add('on'); }
 }
@@ -203,7 +203,7 @@ class DivForm {
 async function dealEpisode(a, d, o={}){
   const sg = SG, alive = () => sg === SG;
   const ds = String(a).split('').map(Number), n = ds.length, places = ['h','t','o'].slice(3-n);
-  C = n === 3 ? (d >= 4 ? 7 : 9) : 13;
+  C = n === 3 ? (d >= 4 ? 7 : 9) : (d >= 5 ? 10 : 13);   // 접시가 5개 이상이면 접시가 작아져서 십막대도 줄인다
   // 화면
   screenEl.innerHTML = ''; fx.innerHTML = '';
   const pl = mk('panel pL dvscene', null, null, '', null, screenEl);
@@ -264,17 +264,17 @@ async function dealEpisode(a, d, o={}){
       if (tries>=2){ await wait(1500); return; }
     }
   };
-  const next = label => new Promise(res=>setCtrls(btn('pill nudge', label, res)));
+  const next = label => new Promise(res=>setCtrls(btn('pill nudge', label, ()=>{ setCtrls(); res(); })));
 
   if (o.intro !== false){
-    say(`<b>${a}</b>${J(a,'을','를')} 접시 <b>${d}</b>개에 똑같이 나누어 볼까? ${places.map((p,i)=>`${UNIT[p]} ${ds[i]}개`).join(', ')}가 있어. <b>큰 것부터</b> 나눠!`, 'hello');
+    say(`<b>${a}</b>${J(a,'을','를')} 접시 <b>${d}</b>개에 똑같이 나누어 볼까? ${places.map((p,i)=>ds[i] ? `${UNIT[p]} ${ds[i]}개` : '').filter(Boolean).join(', ')}가 있어. <b>큰 것부터</b> 나눠!`, 'hello');
     await next('시작 ▶'); if (!alive()) return;
   }
   let stepIdx = 0;
   for (let pi=0; pi<places.length; pi++){
     const p = places[pi], have = pool[p].length, last = pi === places.length-1;
     const st = M.steps.find(s=>s.i === pi);
-    F.band(pi);
+    F.band(pi, st && st.first ? 0 : pi);
     if (!st){
       // 맨 앞자리가 나누는 수보다 작음 → 몫 자리 없이 다음 자리로 바꾸기
       let spot = spotlight(...areaOf(p));
@@ -293,10 +293,14 @@ async function dealEpisode(a, d, o={}){
         say(`${UNIT[p]} <b class=${COLCLS[p]}>${have}개</b>를 접시 <b>${d}</b>개에 똑같이 나누면, 한 접시에 <b>몇 개씩</b> 줄 수 있을까?`, 'think');
         await ask([q-1, q, q+1].filter(x=>x>=1), q, v => v > q ? `${v}개씩이면 ${UNIT[p]}${J(UNIT[p],'이','가')} ${v*d}개 필요해. ${have}개뿐이라 모자라!` : `${v}개씩 주고도 ${have - v*d}개가 남아. 한 바퀴 더 줄 수 있어!`);
         if (!alive()) return; unspot(spot); say(`맞아! 한 개씩 차례로 나눠 줄게.`, 'praise');
-        for (let r=0;r<q;r++) for (let i=0;i<d;i++){
-          const pc = pool[p].shift(); pc.raise(); const [x,y] = at[p](i, on[i][p]);
-          await pc.fly(x, y, Math.max(240, (r===0 ? 560 : 440) - (r*d+i)*12), p==='o' ? 56 : 80, p==='o' ? (i%2?1:-1)*12 : 0); if (!alive()) return;
-          SFX.tap && SFX.tap(); flash(plates[i].glow); on[i][p]++; setCnt(i); trayCount();
+        // 한 바퀴씩: 접시마다 하나씩 차례로 날아가되 앞 조각이 닿기 전에 다음 조각이 출발 (첫 바퀴는 천천히 보여 주고 점점 빠르게)
+        for (let r=0;r<q;r++){
+          const gap = r===0 ? 200 : r===1 ? 110 : 75, dur = r===0 ? 440 : r===1 ? 340 : 290;
+          await Promise.all(Array.from({length:d}, (_,i)=>{
+            const pc = pool[p].shift(); pc.raise(); const [x,y] = at[p](i, on[i][p]); on[i][p]++;
+            return wait(i*gap).then(()=>pc.fly(x, y, dur, p==='o' ? 56 : 80, p==='o' ? (i%2?1:-1)*12 : 0)).then(()=>{ if (!alive()) return; SFX.tap && SFX.tap(); flash(plates[i].glow); setCnt(i); trayCount(); });
+          }));
+          if (!alive()) return;
         }
       }
     } else {
@@ -306,7 +310,7 @@ async function dealEpisode(a, d, o={}){
     const left = pool[p].slice();
     if (!last){
       if (left.length){
-        await Promise.all(left.map(x=>x.recolor(PAL.r, 450)));
+        await Promise.all(left.map(x=>x.recolor(PAL.r, 320)));
         say(`${UNIT[p]} <b class=r>${left.length}개</b>가 남았어. 이건 접시 <b>${d}</b>개에 똑같이 못 나눠. 어떻게 할까?`, 'think');
         const v = await new Promise(res=>setCtrls(btn('pill opt', `${UNIT[NEXT[p]]}로 바꿔요`, ()=>res('s')), btn('pill opt', '그냥 둬요', ()=>res('k'))));
         if (!alive()) return;
@@ -317,27 +321,27 @@ async function dealEpisode(a, d, o={}){
       await F.down(stepIdx+1); if (!alive()) return;
       const nx = NEXT[p];
       if (pool[nx].length) say(`${UNIT[nx]}${J(UNIT[nx],'이','가')} 모두 <b class=${COLCLS[nx]}>${pool[nx].length}개</b>! 세로식에서는 다음 자리 숫자를 <b>내려 써서</b> ${pool[nx].length}${J(pool[nx].length,'을','를')} 나눠.`, 'explain');
-      await wait(900);
+      await wait(1900);   // 내려 쓰기 설명을 읽을 시간
     }
     stepIdx++;
   }
   F.band(null);
   const Q = Math.floor(a/d), Rm = a%d, rest = pool.o;
   if (Rm){
-    await Promise.all(rest.map(c=>c.recolor(PAL.r, 450)));
+    await Promise.all(rest.map(c=>c.recolor(PAL.r, 320)));
     const LX = TRAY.x + TRAY.w/2, LY = TRAY.y + 70;
-    await Promise.all(rest.map((c,k)=>wait(k*80).then(()=>c.fly(LX - C/2 + (k-(rest.length-1)/2)*(C+6), LY, 520, 30))));
+    await Promise.all(rest.map((c,k)=>wait(k*55).then(()=>c.fly(LX - C/2 + (k-(rest.length-1)/2)*(C+6), LY, 400, 30))));
     const ring = el('ellipse', {cx:LX, cy:LY + C/2, rx:22 + rest.length*(C*.7), ry:20, fill:'none', stroke:'#D9534F', 'stroke-width':2, 'stroke-dasharray':'5 5', opacity:0}, SV.querySelector('#dvspots'));
     tw(300, p=>ring.setAttribute('opacity', p.toFixed(2)));
     label(LX, LY + 46, true, true).setText(`남은 것 ${Rm}`);
   }
   if (!alive()) return;
   SFX.ding();
-  say(Rm ? `한 접시에 <b>${Q}</b>개씩, <b class=r>${Rm}개</b>가 남아. 남은 것이 접시 수 <b>${d}</b>보다 작으니 더는 못 나눠! <b>${a} ÷ ${d} = ${Q} … ${Rm}</b>`
+  say(Rm ? `한 접시에 <b>${Q}</b>개씩, <b class=r>${Rm}개</b>가 남아. 남은 것이 접시 수 <b>${d}</b>보다 작으니 더는 못 나눠! 남은 <b class=r>${Rm}</b>${J(Rm,'을','를')} <b>나머지</b>라고 해. <b>${a} ÷ ${d} = ${Q} … ${Rm}</b> (몫 ${Q}, 나머지 ${Rm})`
          : `한 접시에 <b>${Q}</b>개씩, 남는 것 없이 똑같이 나눴어! <b>${a} ÷ ${d} = ${Q}</b>`, Rm ? 'surprise' : 'praise');
   if (o.check !== false){
     await next('맞는지 확인 ▶'); if (!alive()) return;
-    for (let i=0;i<d;i++){ flash(plates[i].glow); lbl[i].setText(String(Q)); SFX.write && SFX.write(); await wait(260); }
+    for (let i=0;i<d;i++){ flash(plates[i].glow); lbl[i].setText(String(Q)); SFX.write && SFX.write(); await wait(150); }
     F.check(Rm ? `확인: ${d} × ${Q} + ${Rm} = ${a}` : `확인: ${d} × ${Q} = ${a}`); SFX.ding();
     Store.ev('verify.inverse', {a, d});
     say(Rm ? `<b>${Q}</b>개짜리 접시가 <b>${d}</b>개면 ${d*Q}, 남은 <b class=r>${Rm}</b>${J(Rm,'을','를')} 더하면 <b>${a}</b>! 처음 수와 같으니 맞았어.`
@@ -348,27 +352,28 @@ async function dealEpisode(a, d, o={}){
   // p 자리 조각들을 한 단계 아래 자리 10개씩으로 바꾸기
   async function convert(p, list){
     const nx = NEXT[p];
-    for (const pc of list){
+    for (const [ci, pc] of list.entries()){
+      const f = ci === 0 ? .8 : .55;   // 첫 번째 바꾸기는 또렷하게, 나머지는 빠르게
       pc.raise();
       const mx = TRAY.x + TRAY.w/2 - pc.W/2, my = p === 'h' ? TRAY.y + 20 : TRAY.y + 64;
-      await pc.fly(mx, my, 520, 36); if (!alive()) return;
-      await tw(300, q=>{ pc.r = Math.sin(q*Math.PI*6)*4*(1-q); pc.draw(); }); SFX.pop && SFX.pop();
+      await pc.fly(mx, my, 520*f, 36); if (!alive()) return;
+      await tw(300*f, q=>{ pc.r = Math.sin(q*Math.PI*6)*4*(1-q); pc.draw(); }); SFX.pop && SFX.pop();
       let parts;
       if (p === 't'){
         for (let k=1;k<10;k++) sparks(pc.x + k*C, pc.y + C/2);
-        if (pc.frame) tw(200, q=>pc.frame.setAttribute('opacity', (1-q).toFixed(2)));
-        await tw(420, q=>{ pc.gap = 6*outBack(q); pc.layout(); });
-        await pc.recolor(PAL.o, 380); if (!alive()) return;
+        if (pc.frame) tw(200*f, q=>pc.frame.setAttribute('opacity', (1-q).toFixed(2)));
+        await tw(420*f, q=>{ pc.gap = 6*outBack(q); pc.layout(); });
+        await pc.recolor(PAL.o, 380*f); if (!alive()) return;
         parts = pc.cells.map((c,k)=>new Piece('o', PAL.o, layer).set(pc.x + k*C + (k-4.5)*pc.gap, pc.y));
       } else {
         for (let k=1;k<10;k++) sparks(pc.x + 5*C, pc.y + k*C);
-        await pc.recolor(PAL.t, 380); if (!alive()) return;
+        await pc.recolor(PAL.t, 380*f); if (!alive()) return;
         parts = Array.from({length:10}, (_,k)=>new Piece('t', PAL.t, layer).set(pc.x, pc.y + k*C));
-        await Promise.all(parts.map((q,k)=>tw(380, e=>{ q.y = pc.y + k*C + (k-4.5)*5*outBack(e); q.draw(); })));
+        await Promise.all(parts.map((q,k)=>tw(380*f, e=>{ q.y = pc.y + k*C + (k-4.5)*5*outBack(e); q.draw(); })));
       }
       pc.remove(); pool[p].splice(pool[p].indexOf(pc), 1);
       const k0 = pool[nx].length;
-      await Promise.all(parts.map((q,k)=>wait(k*45).then(()=>{ const [x,y] = slot[nx](k0+k); return q.fly(x, y, 520, 36, nx==='o' ? (k%2?1:-1)*14 : 0); })));
+      await Promise.all(parts.map((q,k)=>wait(k*30*f).then(()=>{ const [x,y] = slot[nx](k0+k); return q.fly(x, y, 480*f, 36, nx==='o' ? (k%2?1:-1)*14 : 0); })));
       pool[nx].push(...parts); trayCount();
     }
   }

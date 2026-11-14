@@ -114,8 +114,8 @@ function openMap(opt={}){
   const pb = btn('hbtn', '🔒 부모님', ()=>askPin(openParent), screenEl); css(pb, {left:'1000px', top:'588px', position:'absolute'});
   const allDone = SEAD().list.every(n=>Store.isl(n).treasure);
   say(allDone ? `{n} 대장님, 모든 섬을 정복했어! 👑 복습하고 싶은 섬을 골라 봐.`
-              : `{n} 대장님, 오늘은 <b>${dayOf(cur)}일차 ${ISL[cur].name}</b>을 탐험할 차례야! 섬을 눌러 출발!`);
-  if (Store.sea === 'div' && !Store.d.divGate){ Store.d.divGate = true; Store.save(); showDivGate(); }
+              : `{n} 대장님, 오늘은 <b>${dayOf(cur)}일차 ${ISL[cur].name}</b>${J(ISL[cur].name,'을','를')} 탐험할 차례야! 섬을 눌러 출발!`);
+  if (Store.sea === 'div' && !Store.d.divGate) showDivGate();   // '출발'을 눌러야 본 것으로 저장
   setCtrls(btn('pill nudge', allDone ? '👑 인증서 보기' : `${ISL[cur].icon} 출발!`, ()=> allDone ? showCert() : openIsland(cur)));
 }
 
@@ -181,7 +181,7 @@ function treasureIntro(n){
   if (Store.sea === 'div'){
     if (isLast(n)) return `마지막 보물상자! 숫자카드 <b>2, 5, 7, 9</b>로 (세 자리 수)÷(한 자리 수)를 만들 때 <b>가장 큰 몫</b>이 비밀번호야.`;
     if (n === 4) return `□ ÷ 6 = 12 … 5에서 □는 얼마일까? <b>나누는 수 × 몫 + 나머지</b>로 구해 봐!`;
-    return `보물상자 비밀번호는 오늘의 미션 <b>${ISL[n].mission}</b>의 ${missionRem(n) ? '<b>몫과 나머지</b>를 이어 쓴 수' : '<b>몫</b>'}이야!`;
+    return `보물상자 비밀번호는 오늘의 미션 <b>${ISL[n].mission}</b>의 ${missionRem(n) ? '<b>몫과 나머지</b>를 이어 쓴 수야!' : '<b>몫</b>이야!'}`;
   }
   return isLast(n) ? `마지막 보물상자! 비밀번호는 숫자카드 <b>2, 5, 7, 9</b>로 만든 <b>가장 큰 곱</b>이야.` : `보물상자 비밀번호는 오늘의 미션 <b>${ISL[n].mission}</b>의 답이야! 기억나?`;
 }
@@ -189,7 +189,7 @@ function showDivGate(){
   const g = mk('ovbg gate', null, null, `<img src="img/char/scene_division_gate.webp" alt=""><div><div class="ovmsg">나눗셈 바다에 온 걸 환영해!</div>
     <div class="ovsub">똑같이 나누는 섬 8개가 기다리고 있어.<br>첫 섬은 <b>🍬 사탕 섬</b>이야.</div></div>`, null, ovEl);
   say(`여기는 <b>나눗셈 바다</b>! 곱셈을 거꾸로 하면 나눗셈이야. 루퍼드랑 하나씩 똑같이 나눠 보자.`, 'hello');
-  setCtrls(btn('pill nudge', '⛵ 출발!', ()=>{ ovEl.innerHTML = ''; openIsland(currentIsland()); }));
+  setCtrls(btn('pill nudge', '⛵ 출발!', ()=>{ Store.d.divGate = true; Store.save(); ovEl.innerHTML = ''; openIsland(currentIsland()); }));
 }
 
 /* ---------- 보물상자 ---------- */
@@ -275,14 +275,15 @@ async function openTreasure(n){
   if (sg !== SG) return;
   mkEl.remove();
   SFX.ding();
+  // 비밀번호를 맞힌 순간 저장 (열리는 연출 중에 지도로 나가도 보물은 남게)
+  Store.mark(n, 'treasure');
+  Store.ev('island.treasure', {isl:n, codeShown:!!isl.codeShown});
   try {
     await waitFixed(300);
     await all([A($('lid'), {transform:'rotateX(74deg)'}, 800, {easing:'cubic-bezier(.3,1.3,.5,1)', fixed:true}), A($('glow'), {opacity:'1'}, 700, {fixed:true})]);
     SFX.fanfare(); confetti(30, 1220, ovEl);
     await A($('prize'), [{opacity:0, transform:'translateY(40px) scale(.3)'},{opacity:1, transform:'translateY(-60px) scale(1.3)', offset:.6},{opacity:1, transform:'translateY(-40px) scale(1)'}], 900, {fixed:true});
   } catch(e){ return; }
-  Store.mark(n, 'treasure');
-  Store.ev('island.treasure', {isl:n, codeShown:!!isl.codeShown});
   const nx = nextIsl(n);
   $('omsg').innerHTML = `${I.prizeName} ${I.prize} 획득!`;
   $('osub').innerHTML = nx !== null ? `다음 섬 <b>${ISL[nx].icon} ${ISL[nx].name}</b>이 열렸어!` : '모든 섬을 정복했어!';
@@ -313,9 +314,9 @@ if (/[?&]pin=reset\b/.test(location.search)){
   setPin(null);
   try { history.replaceState(null, '', location.pathname + location.search.replace(/[?&]pin=reset\b/, '').replace(/^&/, '?') + location.hash); } catch(e){}
 }
-function askPin(onOk){
+function askPin(onOk, opt={}){
   ovEl.innerHTML = '';
-  const saved = getPin();
+  const saved = opt.change ? null : getPin();   // 바꾸기: 새로 두 번 입력해서 확인될 때만 저장 (✕로 닫으면 예전 비밀번호 그대로)
   let first = null;                       // 처음 정할 때 첫 번째 입력
   const wrap = mk('ovbg pinbg', null, null, `
     <div class="pinic">🔒</div>
@@ -349,6 +350,16 @@ function askPin(onOk){
 }
 
 /* ---------- 부모님 화면 ---------- */
+// 나눗셈 바다 부모님 화면: 연습문제 풀이 기록 (Store.ev 'solve')
+function divSolveHtml(){
+  const L = Store.d.ev.filter(e=>e.ev === 'solve' && e.sea === 'div');
+  if (!L.length) return '<div class=ptip>섬의 연습문제를 풀면 기록이 쌓여요.</div>';
+  const ok = L.filter(e=>e.r === 'ok').length, sol = L.filter(e=>e.help === 'sol').length;
+  const mark = e => e.r === 'ok' ? '✅' : e.r === 'fix' ? '🔁' : '📖';
+  return `<div>푼 문제 <b>${L.length}개</b> · 한 번에 맞힘 <b>${Math.round(ok/L.length*100)}%</b>${sol ? ` · 풀이 보기 ${sol}번` : ''}</div>
+    <div class=ptip style="margin-top:6px">${L.slice(-8).reverse().map(e=>`${e.q} ${mark(e)}`).join('<br>')}</div>
+    <div class=ptip style="margin-top:4px">✅ 한 번에 · 🔁 고쳐서 맞힘 · 📖 풀이를 봄</div>`;
+}
 function openParent(){
   ovEl.innerHTML = '';
   const d = Store.d;
@@ -367,9 +378,9 @@ function openParent(){
   const avg = a => a.length ? Math.round(a.reduce((x,y)=>x+y.sec,0)/a.length) : null;
   const first = avg(t.slice(0,5)), last = avg(t.slice(-5));
   const timeHtml = t.length ? `<div>첫 5문제 평균 <b>${first}초</b> → 최근 5문제 평균 <b>${last}초</b> ${last<first?'🚀':''}</div><div class=ptip style="margin-top:6px">${d.times.slice(-8).reverse().map(x=>`${x.q} · ${x.sec}초 ${x.ok?'✅':'🔁'}`).join('<br>')}</div>` : '<div class=ptip>훈련 섬에서 문제를 풀면 걸린 시간이 기록돼요.</div>';
-  const EX = ES(), eh = EX.hist.slice(-6).reverse();
+  const EX = ES(), eh = EX.hist.filter(h=>String(h.key||'').startsWith('div:') === DV).slice(-6).reverse(), noteN = EX.note.filter(x=>(x.sea || 'mul') === Store.sea).length;
   const examHtml = (eh.length ? `<div class=ptip>${eh.map(h=>`${new Date(h.t).toLocaleDateString('ko-KR')} · ${h.title} — <b>${h.score}점</b> (${h.ok}/${h.n}, ${minsec(h.used)})`).join('<br>')}</div>` : '<div class=ptip>아직 본 시험이 없어요. 지도의 🗼 시험 등대에서 볼 수 있어요.</div>')
-    + `<div class=ptip style="margin-top:4px">오답 노트에 남은 문제: <b>${EX.note.length}개</b></div>`;
+    + `<div class=ptip style="margin-top:4px">오답 노트에 남은 문제: <b>${noteN}개</b></div>`;
   const TIPS = DV ? PARENT_TIPS_DIV : PARENT_TIPS;
   const tips = SEAD().list.map(n=>`<div class=ptip><b>${ISL[n].icon} ${ISL[n].name}</b> — ${TIPS[n].join(' / ')}</div>`).join('');
   const p = mk('parent', null, null, `
@@ -378,24 +389,24 @@ function openParent(){
     <table><tr><th>섬</th><th>진행</th><th>보물</th></tr>${rows}</table>
     <div class="cols">
       <div><h4>자주 한 실수 Top 3</h4>${misHtml}</div>
-      <div><h4>훈련 섬 손풀이 시간</h4>${timeHtml}</div>
+      <div><h4>${DV ? '연습문제 기록' : '훈련 섬 손풀이 시간'}</h4>${DV ? divSolveHtml() : timeHtml}</div>
     </div>
     <h4>🗼 시험 등대 기록</h4>${examHtml}
     <h4>섬별 "이렇게 물어봐 주세요"</h4>${tips}
     <div class="pbtns">
-      <button id="pUnlock">${d.unlockAll ? '🔓 섬 순서대로 열기로 되돌리기' : '🔓 모든 섬 바로 열기'}</button>
+      <button id="pUnlock">${d.unlockAll ? '🔓 섬 순서대로 열기로 되돌리기' : '🔓 모든 섬 바로 열기'} (두 바다)</button>
       <button id="pName">✏️ 이름 바꾸기</button>
       <button id="pPin">🔑 비밀번호 바꾸기</button>
-      <button id="pReset">🗑 학습 기록 초기화</button>
+      <button id="pReset">🗑 학습 기록 초기화 (두 바다 모두)</button>
     </div>
     <div class=ptip style="margin-top:10px">기록은 이 아이패드의 이 브라우저 안에만 저장돼요. 다른 기기와는 공유되지 않아요.<br>
       부모님 비밀번호를 잊었을 때는 주소 끝에 <b>?pin=reset</b> 을 붙여 열면 다시 정할 수 있어요.</div>`, null, ovEl);
-  $('pPin').onclick = ()=>{ setPin(null); askPin(openParent); };
+  $('pPin').onclick = ()=>askPin(openParent, {change:true});
   p.querySelectorAll('.psea button').forEach(b=>b.onclick = ()=>{ setSea(b.dataset.sea); openParent(); });
   $('pX').onclick = ()=>{ ovEl.innerHTML = ''; openMap(); };
   $('pUnlock').onclick = ()=>{ d.unlockAll = !d.unlockAll; Store.save(); openParent(); };
   $('pName').onclick = ()=>{ const v = prompt('부르는 이름을 적어 주세요', NM()); if (v && v.trim()){ d.name = v.trim(); Store.save(); openParent(); } };
-  $('pReset').onclick = ()=>{ if (confirm('학습 기록을 모두 지울까요? (이름은 그대로 남아요)')){ Store.reset(); openParent(); } };
+  $('pReset').onclick = ()=>{ if (confirm('곱셈 바다와 나눗셈 바다의 학습 기록을 모두 지울까요? (이름은 그대로 남아요)')){ Store.reset(); openParent(); } };
 }
 
 /* ---------- 시작 ---------- */
