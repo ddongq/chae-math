@@ -7,6 +7,7 @@
 $('ctrls').addEventListener('click', e=>{
   if (Store.sea !== 'div') return;
   const b = e.target.closest('button'); if (!b || b.dataset.keep) return;
+  if (!document.querySelector('#screen .dvscene') && !b.classList.contains('opt')) return;   // 원리 장면과 보기 고르기 버튼에만
   // 누른 순간에 있던 버튼만 잠근다 (누른 뒤 새로 나온 버튼은 그대로 쓸 수 있게)
   const olds = [...$('ctrls').querySelectorAll('button')].filter(x=>!x.dataset.keep);
   olds.forEach(x=>{ if (x !== b){ x.disabled = true; x.classList.add('used'); } });

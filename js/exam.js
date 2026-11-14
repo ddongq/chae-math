@@ -16,7 +16,7 @@ function RNG(seed){
 }
 
 /* ---------- 소단원 · 유형 ---------- */
-const UNITS = [null,
+const UNITS_M = [null,
   {no:'①', name:'(세 자리 수)<br>× (한 자리 수)',         short:'세 자리 × 한 자리'},
   {no:'②', name:'(몇십) × (몇십),<br>(몇십몇) × (몇십)', short:'몇십 곱하기'},
   {no:'③', name:'(몇) × (몇십몇)',                     short:'몇 × 몇십몇'},
@@ -24,14 +24,14 @@ const UNITS = [null,
   {no:'⑤', name:'곱셈 활용<br>(문장제 · 어림 · 비교)',     short:'곱셈 활용'},
 ];
 const CATS = {calc:'계산', idea:'원리·빈칸', cmp:'비교·어림', word:'문장제', think:'추론'};
-const UNIT_TIP = {
+const UNIT_TIP_M = {
   1:'(세 자리 수) × (한 자리 수)는 <b>일 → 십 → 백</b> 순서로 곱하고, 받아올린 수를 다음 자리 곱에 꼭 더해요.',
   2:'몇십을 곱할 때는 <b>0을 떼고 곱한 다음 0을 붙여요</b>. 0의 개수를 세어 보세요. (섬 1 · 2)',
   3:'(몇) × (몇십몇)은 <b>몇십몇을 몇십과 몇으로 나눠</b> 곱하고 더해요. (섬 2)',
   4:'두 번째 줄은 <b>× 몇십</b>이라 0부터 써요. 받아올림은 빨간 숫자로 작게! (섬 3 · 4)',
   5:'문제를 끝까지 읽고 <b>몇씩 몇 묶음</b>인지 찾아 식을 세워요. 어림으로 답을 확인해요. (보물섬)',
 };
-const CAT_TIP = {
+const CAT_TIP_M = {
   calc: '계산할 때 공책 칸에 <b>자리를 맞춰</b> 쓰고, 다 풀면 어림으로 확인해요.',
   idea: '곱셈을 <b>나눠서 곱하는 원리</b>(36 × 24 = 36 × 4 + 36 × 20)를 다시 떠올려 봐요.',
   cmp:  '<b>어림</b>과 크기 비교는 몇십, 몇백으로 바꿔 생각하면 쉬워요.',
@@ -139,7 +139,7 @@ function missQ(u, a, b, r, slots){
 }
 
 /* ---------- 문제 공장 ---------- */
-const F = {
+const F_M = {
   // ① (세 자리 수) × (한 자리 수)
   u1calc: (r, k=0) => { const {a, m} = g31(r, k); return qq({u:1, cat:'calc', html: ask('계산해 보세요.') + big(`${a} × ${m}`), ans:a*m, sol:{a, b:m}, brief:`${a} × ${m}`, exp:mulExp(a, m)}); },
   u1vert: (r) => { const {a, m} = g31(r, 3); return qq({u:1, cat:'calc', html: ask('계산해 보세요.') + vcalc([{s:a}, {op:'×', s:m}, {bar:1}]), ans:a*m, sol:{a, b:m}, brief:`${a} × ${m} (세로셈)`, exp:mulExp(a, m)}); },
@@ -258,27 +258,36 @@ const F = {
 const factUnit = name => Number(name[1]);
 
 /* ---------- 시험지 구성 ---------- */
-const BP_UNIT = [
+const BP_UNIT_M = [
   ['u1calc',0], ['u1decomp'], ['u1calc',3], ['u2tt'], ['u2blank',0], ['u2xt'], ['u3calc'], ['u3split'],
   ['u4calc',1], ['u4calc',3], ['u4partial'], ['u4vert',3], ['u2cmp'], ['u1word'], ['u4word'],
   ['u5est',0], ['u5big'], ['u4error'], ['u4missing'], ['u5cards'],
 ];
-const BP_SUB = {
+const BP_SUB_M = {
   1: [['u1calc',0], ['u1calc',1], ['u1calc',2], ['u1calc',4], ['u1vert'], ['u1decomp'], ['u1cmp'], ['u1missing'], ['u1word'], ['u1calc',3]],
   2: [['u2tt'], ['u2tt',1], ['u2xt'], ['u2xt'], ['u2blank',0], ['u2blank',1], ['u2cmp'], ['u2missing'], ['u2word'], ['u2word']],
   3: [['u3calc'], ['u3calc'], ['u3calc'], ['u3split'], ['u3split'], ['u3cmp'], ['u3big'], ['u3word'], ['u3word'], ['u3calc']],
   4: [['u4calc',1], ['u4calc',2], ['u4calc',3], ['u4vert',3], ['u4partial'], ['u4error','shift'], ['u4error','carry'], ['u4missing'], ['u4cmp'], ['u4word']],
   5: [['u5word'], ['u5word'], ['u5word2'], ['u5est',0], ['u5est',1], ['u5big'], ['u5cards',1], ['u5cards',0], ['u5cmp'], ['u5word2']],
 };
+/* 바다에 따라 소단원·문제 공장·시험지 틀을 바꿔 끼운다 (나눗셈: examdiv.js 의 EXAM_DIV) */
+let UNITS = UNITS_M, UNIT_TIP = UNIT_TIP_M, CAT_TIP = CAT_TIP_M, F = F_M, BP_UNIT = BP_UNIT_M, BP_SUB = BP_SUB_M;
+function examSea(sea){
+  const X = sea === 'div' && typeof EXAM_DIV !== 'undefined' ? EXAM_DIV : {UNITS:UNITS_M, UNIT_TIP:UNIT_TIP_M, CAT_TIP:CAT_TIP_M, F:F_M, BP_UNIT:BP_UNIT_M, BP_SUB:BP_SUB_M};
+  ({UNITS, UNIT_TIP, CAT_TIP, F, BP_UNIT, BP_SUB} = X);
+}
+const SEA_WORD = () => Store.sea === 'div' ? '나눗셈' : '곱셈';
 function buildExam(spec){
+  examSea(spec.sea || 'mul');
   const r = RNG(spec.seed);
   let bp, title, limit;
-  if (spec.mode === 'unit'){ bp = BP_UNIT; title = `📝 단원평가 ${spec.k}회`; limit = 40*60; }
-  else if (spec.mode === 'sub'){ bp = BP_SUB[spec.k]; title = `📑 소단원 평가 ${UNITS[spec.k].no}`; limit = 20*60; }
+  const sw = spec.sea === 'div' ? '나눗셈 ' : '';
+  if (spec.mode === 'unit'){ bp = BP_UNIT; title = `📝 ${sw}단원평가 ${spec.k}회`; limit = 40*60; }
+  else if (spec.mode === 'sub'){ bp = BP_SUB[spec.k]; title = `📑 ${sw}소단원 평가 ${UNITS[spec.k].no}`; limit = 20*60; }
   else {
     bp = []; for (let i = 0; i < spec.n; i++) bp.push(r.pick(BP_SUB[spec.units[i % spec.units.length]]));
     bp.sort((x, y)=>factUnit(x[0]) - factUnit(y[0]));
-    title = `🎲 문제은행 ${spec.n}문항`; limit = spec.n*2*60;
+    title = `🎲 ${sw}문제은행 ${spec.n}문항`; limit = spec.n*2*60;
   }
   const qs = [], seen = new Set();
   for (const [name, arg] of bp){
@@ -290,7 +299,7 @@ function buildExam(spec){
 
 /* ---------- 기록 ---------- */
 const ES = () => Store.d.exam || (Store.d.exam = {best:{}, hist:[], note:[], cur:null});
-const examKey = spec => spec.mode === 'bank' ? 'bank' : spec.mode + spec.k;
+const examKey = spec => (spec.sea === 'div' ? 'div:' : '') + (spec.mode === 'bank' ? 'bank' : spec.mode + spec.k);
 const isRight = (q, a) => a !== null && a !== undefined && a !== '' && (q.kind === 'num' ? Number(a) === q.ans : a === q.ans);
 const ansText = (q, a) => (a === null || a === undefined || a === '') ? '<span class=gemp>안 풀었어요</span>'
   : q.kind === 'num' ? `${a}${q.unit ? `<small>${q.unit}</small>` : ''}` : q.kind === 'cmp' ? SYM[a] : `${NUMS[a]} ${q.ch[a]}`;
@@ -317,28 +326,31 @@ const TOWER_SVG = `<svg viewBox="0 0 80 110" width="80" height="110" style="over
 let BANK = {units:[1,2,3,4,5], n:10};
 function openTower(tab='unit'){
   resetScreen();
-  const E = ES();
+  const E = ES(), sea = Store.sea; examSea(sea);
+  const NOTE = E.note.filter(x=>(x.sea || 'mul') === sea);
+  const cur = E.cur && (E.cur.spec.sea || 'mul') === sea ? E.cur : null;
   $('bMap').style.display = '';
-  $('title').innerHTML = `🗼 시험 등대<small>곱셈 단원</small>`;
+  $('title').innerHTML = `🗼 시험 등대<small>${SEA_WORD()} 단원</small>`;
   const tabs = $('tabs'); tabs.innerHTML = '';
-  [['unit','📝 단원평가'], ['sub','📑 소단원 평가'], ['bank','🎲 문제은행'], ['note', `📒 오답 노트${E.note.length ? ` ${E.note.length}` : ''}`]]
+  [['unit','📝 단원평가'], ['sub','📑 소단원 평가'], ['bank','🎲 문제은행'], ['note', `📒 오답 노트${NOTE.length ? ` ${NOTE.length}` : ''}`]]
     .forEach(([k, l])=>btn(k===tab ? 'on' : '', l, ()=>openTower(k), tabs));
   const pf = fullPanel();
-  const resume = E.cur ? btn('pill y sm', '▶ 보던 시험 이어서', ()=>startExam(E.cur.spec, E.cur)) : null;
-  const bestTxt = key => E.best[key] !== undefined ? `최고 <b>${E.best[key]}점</b>` : '아직 안 봤어요';
+  const resume = cur ? btn('pill y sm', '▶ 보던 시험 이어서', ()=>startExam(cur.spec, cur)) : null;
+  const pre = sea === 'div' ? 'div:' : '';
+  const bestTxt = key => E.best[pre+key] !== undefined ? `최고 <b>${E.best[pre+key]}점</b>` : '아직 안 봤어요';
 
   if (tab === 'unit'){
-    mk('hhead', null, null, '곱셈 단원 전체(① ~ ⑤) · <b>20문항 · 100점 · 40분</b><br>학교 단원평가처럼 끝까지 풀고 마지막에 제출해요', null, pf);
+    mk('hhead', null, null, `${SEA_WORD()} 단원 전체(① ~ ⑤) · <b>20문항 · 100점 · 40분</b><br>학교 단원평가처럼 끝까지 풀고 마지막에 제출해요`, null, pf);
     const row = mk('hcards', null, null, '', null, pf);
     [1,2,3].forEach(k=>btn('hcard', `<div class=hk>${k}회</div><div class=hd>20문항 · 40분</div><div class=hb>${bestTxt('unit'+k)}</div><div class=hgo>시작 ▶</div>`,
-      ()=>startExam({mode:'unit', k, seed:'unit-'+k}), row));
-    say(E.cur ? '보던 시험이 있어! <b>이어서</b> 볼 수도 있어.' : '단원평가는 학교 시험처럼 <b>20문제</b>를 다 풀고 제출해. 셈이는 시험 중엔 힌트를 안 줘!');
+      ()=>startExam({mode:'unit', k, sea, seed:pre+'unit-'+k}), row));
+    say(cur ? '보던 시험이 있어! <b>이어서</b> 볼 수도 있어.' : '단원평가는 학교 시험처럼 <b>20문제</b>를 다 풀고 제출해. 루퍼드는 시험 중엔 힌트를 안 줘!');
   }
   if (tab === 'sub'){
     mk('hhead', null, null, '소단원마다 <b>10문항 · 100점 · 20분</b><br>약한 부분만 골라서 집중 연습해요', null, pf);
     const row = mk('hcards', null, null, '', null, pf);
     [1,2,3,4,5].forEach(u=>btn('hcard sm', `<div class=hk>${UNITS[u].no}</div><div class=hn>${UNITS[u].name}</div><div class=hb>${bestTxt('sub'+u)}</div><div class=hgo>시작 ▶</div>`,
-      ()=>startExam({mode:'sub', k:u, seed:'sub-'+u}), row));
+      ()=>startExam({mode:'sub', k:u, sea, seed:pre+'sub-'+u}), row));
     say('소단원 평가는 <b>한 부분만</b> 10문제! 약한 곳을 골라 봐.');
   }
   if (tab === 'bank'){
@@ -354,23 +366,23 @@ function openTower(tab='unit'){
     mk('blabel', null, null, '② 문항 수를 골라요', null, box);
     const nr = mk('brow', null, null, '', null, box);
     const nb = [5,10,20].map(n=>btn('chip'+(BANK.n===n ? ' on' : ''), `${n}문항 · ${n*2}분`, ()=>{ BANK.n = n; nb.forEach((b,i)=>b.classList.toggle('on', [5,10,20][i]===n)); }, nr));
-    const go = btn('pill nudge', '🎲 새 시험지 만들기', ()=>startExam({mode:'bank', units:[...BANK.units], n:BANK.n, seed:'bank-'+Date.now()}), box);
+    const go = btn('pill nudge', '🎲 새 시험지 만들기', ()=>startExam({mode:'bank', units:[...BANK.units], n:BANK.n, sea, seed:pre+'bank-'+Date.now()}), box);
     go.style.marginTop = '8px';
     say('문제은행은 누를 때마다 <b>새로운 문제</b>가 나와! 몇 번이든 풀 수 있어.');
   }
   if (tab === 'note'){
-    if (!E.note.length){
+    if (!NOTE.length){
       mk('hhead', null, null, '<span style="font-size:60px">🎉</span><br>오답 노트가 비어 있어요!<br>시험에서 틀린 문제가 여기에 모여요.', null, pf).style.top = '150px';
       say('틀린 문제가 하나도 없어! 시험을 보면 틀린 문제가 여기로 와.');
     } else {
-      mk('hhead', null, null, `틀린 문제 <b>${E.note.length}개</b>가 모여 있어요 · 다시 풀어서 맞히면 노트에서 빠져요`, null, pf);
+      mk('hhead', null, null, `틀린 문제 <b>${NOTE.length}개</b>가 모여 있어요 · 다시 풀어서 맞히면 노트에서 빠져요`, null, pf);
       const list = mk('notelist', null, null, '', null, pf);
-      E.note.slice(0, 9).forEach(q=>mk('nitem', null, null, `<span class=nu>${UNITS[q.u].no}</span> ${q.brief}<small>${q.from || ''}</small>`, null, list));
-      if (E.note.length > 9) mk('nmore', null, null, `… 외 ${E.note.length - 9}개`, null, pf);
-      say(`오답 노트에 <b>${E.note.length}문제</b>! 한 번에 10문제씩 다시 풀 수 있어.`);
+      NOTE.slice(0, 9).forEach(q=>mk('nitem', null, null, `<span class=nu>${UNITS[q.u].no}</span> ${q.brief}<small>${q.from || ''}</small>`, null, list));
+      if (NOTE.length > 9) mk('nmore', null, null, `… 외 ${NOTE.length - 9}개`, null, pf);
+      say(`오답 노트에 <b>${NOTE.length}문제</b>! 한 번에 10문제씩 다시 풀 수 있어.`);
     }
   }
-  setCtrls(resume, tab === 'note' && E.note.length ? btn('pill nudge', `🔁 다시 풀기 (${Math.min(10, E.note.length)}문제)`, ()=>safe(retryWrong)(E.note.slice(0, 10), 'note')) : null);
+  setCtrls(resume, tab === 'note' && NOTE.length ? btn('pill nudge', `🔁 다시 풀기 (${Math.min(10, NOTE.length)}문제)`, ()=>safe(retryWrong)(NOTE.slice(0, 10), 'note')) : null);
 }
 
 /* =========================================================
@@ -472,7 +484,7 @@ function startExam(spec, resume){
     const ok = res.filter(Boolean).length, score = Math.round(ok * ex.pt), diag = [];
     ex.qs.forEach((q,k)=>{
       if (res[k] || S.ans[k] === null || q.cat !== 'calc' || !q.sol) return;
-      const t = q.sol.a < 100 ? diagnose(q.sol.a, q.sol.b, Number(S.ans[k])) : 'other';
+      const t = q.sol.div ? (q.ask === 'r' ? 'sub' : divDiagnose(q.sol.a, q.sol.d, Number(S.ans[k]), null)) : (q.sol.a < 100 ? diagnose(q.sol.a, q.sol.b, Number(S.ans[k])) : 'other');
       diag.push(t === 'ok' ? 'other' : t); Store.mistake(t === 'ok' ? 'other' : t);
     });
     const key = examKey(spec);
@@ -560,7 +572,7 @@ function showAnalysis(R){
   const weakest = map => { let w = null; map.forEach((v,k)=>{ const p = v.ok/v.n; if (p < 1 && (!w || p < w.p)) w = {k, p}; }); return w; };
   const wu = weakest(U), wc = weakest(C);
   const diagCount = {}; R.diag.forEach(t=>diagCount[t] = (diagCount[t]||0) + 1);
-  const dtxt = Object.entries(diagCount).filter(([t])=>t !== 'other').map(([t,n])=>`${MISTAKE_NAME[t]} ${n}번`).join(', ');
+  const dtxt = Object.entries(diagCount).filter(([t])=>t !== 'other').map(([t,n])=>`${(Store.sea === 'div' ? DIV_MISTAKE_NAME : MISTAKE_NAME)[t]} ${n}번`).join(', ');
   const adv = !wu && !wc ? '모든 문제를 맞혔어요! 🎉 문제은행에서 새로운 문제에 도전해 보세요.'
     : [wu ? `<b>${UNITS[wu.k].no} ${UNITS[wu.k].short}</b> — ${UNIT_TIP[wu.k]}` : '', wc ? `<b>${CATS[wc.k]}</b> — ${CAT_TIP[wc.k]}` : '', dtxt ? `<b>이번 시험의 계산 실수</b> — ${dtxt}` : ''].filter(Boolean).join('<br>');
   mk('advice', null, null, `<div class=adt>💡 이렇게 해 봐요</div>${adv}`, null, pf);
@@ -597,6 +609,7 @@ async function retryWrong(list, back){
   for (let i = 0; i < N; i++){
     const q = list[i];
     nb.forEach((b,k)=>b.classList.toggle('on', k === i));
+    if (bd._div){ bd._div.destroy(); bd._div.el.remove(); bd._div = null; }
     bd.clearInk(); bd.clearLayer(); bd.unhl();
     setPaper(paper, i+1, q.from || '', q);
     st.innerHTML = `🔁 다시 풀기 <b>${i+1}</b> / ${N}`;
@@ -612,8 +625,8 @@ async function retryWrong(list, back){
         if (right){ SFX.right(); if (q.kind !== 'num') ui.box.dataset.lock = 1; else ui.locked = true; res('ok'); return; }
         SFX.wrong(); tries++;
         if (tries === 1){
-          const dt = (q.cat === 'calc' && q.sol && q.sol.a < 100) ? diagnose(q.sol.a, q.sol.b, Number(v)) : 'other';
-          const tip = dt !== 'other' ? mistakeMsg(dt, q.sol.a, q.sol.b) : '';
+          const dt = (q.cat === 'calc' && q.sol) ? (q.sol.div ? (q.ask === 'r' ? 'sub' : divDiagnose(q.sol.a, q.sol.d, Number(v), null)) : (q.sol.a < 100 ? diagnose(q.sol.a, q.sol.b, Number(v)) : 'other')) : 'other';
+          const tip = dt !== 'other' && dt !== 'ok' ? (q.sol.div ? divMistakeMsg(dt, q.sol.a, q.sol.d) : mistakeMsg(dt, q.sol.a, q.sol.b)) : '';
           say(tip || '아깝다! 한 번 더 생각해 볼까? 공책에 써 보면 실수를 찾기 쉬워.');
         } else { if (q.kind !== 'num') ui.box.dataset.lock = 1; else ui.locked = true; res('no'); }
       };
@@ -632,8 +645,9 @@ async function retryWrong(list, back){
       mk('expcard', null, null, `<div class=adt>📖 풀이</div>${q.exp}`, null, area);
     }
     await new Promise(res=>{
-      const showVert = q.sol ? btn('pill w sm', '👀 세로셈 풀이', async ()=>{
+      const showVert = q.sol ? btn('pill w sm', q.sol.div ? '👀 세로식 풀이' : '👀 세로셈 풀이', async ()=>{
         showVert.disabled = true; paper.style.display = 'none'; bd.clearInk();
+        if (q.sol.div){ const db = bd._div = new DivBoard({pen:true}); db.setProblem(q.sol.a, q.sol.d); await db.reveal(220); return; }   // 나눗셈 세로식 보드를 위에 덮기
         bd.setProblem(q.sol.a, q.sol.b);
         try { await bd.reveal(solStages(q.sol), 220); } catch(e){}
       }) : null;
@@ -641,6 +655,7 @@ async function retryWrong(list, back){
     });
     if (sg !== SG) return;
   }
+  if (bd._div){ bd._div.destroy(); bd._div.el.remove(); bd._div = null; }
   SFX.ding();
   say(`다시 풀기 끝! <b>${okN}문제</b>를 맞혀서 오답 노트에서 뺐어.${okN < N ? ' 남은 문제는 오답 노트에서 또 풀 수 있어.' : ' 🎉'}`);
   setCtrls(back && back !== 'note' ? btn('pill w sm', '📋 시험 결과', ()=>safe(showGrading)(back, true)) : null, btn('pill sm', '🗼 등대로', ()=>openTower('note')));
