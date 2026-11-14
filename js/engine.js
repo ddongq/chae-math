@@ -201,9 +201,10 @@ function fitBubble(){
   let fs = 23; b.style.fontSize = fs+'px';
   while (inner.scrollHeight > b.clientHeight - 18 && fs > 16){ fs--; b.style.fontSize = fs+'px'; }
 }
-function say(html){
+function say(html, face){
   $('bubble').innerHTML = '<div>'+breakSentences(html.replace(/\{n\}/g, NM()))+'</div>';
   fitBubble();
+  if (typeof setFace === 'function') setFace(face || pickFace(html));
   if (!INSTANT){
     $('bubble').animate([{transform:'scale(.97)',opacity:.4},{transform:'scale(1)',opacity:1}],{duration:260});
     const p = $('parrot'); p.classList.remove('talk'); void p.offsetWidth; p.classList.add('talk');
@@ -249,26 +250,30 @@ function gemFly(fromX, fromY){
   an.onfinish = ()=>g.remove();
 }
 
-/* ---------- 셈이 (앵무새) ---------- */
-const PARROT = `<svg viewBox="0 0 120 130" width="120" height="130">
-  <ellipse cx="60" cy="124" rx="32" ry="5" fill="rgba(0,0,0,.13)"/>
-  <path d="M50 100 L42 128 L60 112 L76 128 L70 100Z" fill="#2E9E5B"/>
-  <ellipse cx="60" cy="82" rx="34" ry="35" fill="#3CC46E"/>
-  <ellipse cx="60" cy="92" rx="21" ry="22" fill="#C4F2CD"/>
-  <path d="M27 70 Q16 100 44 108 Q40 86 27 70Z" fill="#2E9E5B"/>
-  <path d="M93 70 Q104 100 76 108 Q80 86 93 70Z" fill="#2E9E5B"/>
-  <circle cx="60" cy="44" r="28" fill="#3CC46E"/>
-  <path d="M50 18 Q46 0 60 5 Q55 11 58 18Z" fill="#FF5A5F"/>
-  <path d="M58 17 Q65 -1 74 7 Q65 10 65 19Z" fill="#FFC531"/>
-  <circle cx="39" cy="55" r="6" fill="#FF9AA2" opacity=".75"/><circle cx="81" cy="55" r="6" fill="#FF9AA2" opacity=".75"/>
-  <circle cx="48" cy="40" r="8.5" fill="#fff"/><circle cx="49" cy="41" r="4.8" fill="#222"/><circle cx="50.7" cy="39" r="1.6" fill="#fff"/>
-  <circle cx="72" cy="40" r="8.5" fill="#fff"/><circle cx="71" cy="41" r="4.8" fill="#222"/><circle cx="72.7" cy="39" r="1.6" fill="#fff"/>
-  <path d="M52 50 Q60 45 68 50 Q66 64 60 66 Q54 64 52 50Z" fill="#FF9F1C"/>
-  <path d="M54 56 Q60 60 66 56" stroke="#D97706" stroke-width="2" fill="none"/>
-  <path d="M50 116 l-4 8 M56 117 l0 8 M66 117 l0 8 M72 116 l4 8" stroke="#E08A1C" stroke-width="3" stroke-linecap="round"/>
-</svg>`;
-$('parrot').innerHTML = PARROT;
-$('startParrot').innerHTML = PARROT.replace('width="120" height="130"', 'width="170" height="184"');
-
+/* ---------- 루퍼드 (안내) ----------
+   그림: img/char/rupert_*.webp (512 정사각, 같은 인물은 머리 높이가 같아서 표정만 바꿔도 흔들리지 않음)
+   say(html, face)에 표정을 직접 줄 수 있고, 안 주면: 방금 정답 소리 → 칭찬, 방금 오답 소리 → 위로, 물음표 → 생각, 그 밖엔 설명 */
+const FACES = ['explain','praise','surprise','think','cheer','comfort','hello','focus'];
+const faceSrc = f => `img/char/rupert_${f}.webp`;
+FACES.forEach(f=>{ const im = new Image(); im.src = faceSrc(f); });
+$('parrot').innerHTML = `<img id="face" src="${faceSrc('hello')}" alt="루퍼드">`;
+let MOOD = null, MOODT = 0;
+['right','fanfare'].forEach(k=>{ const f = SFX[k]; SFX[k] = (...a)=>{ MOOD = 'praise'; MOODT = performance.now(); return f(...a); }; });
+{ const f = SFX.wrong; SFX.wrong = (...a)=>{ MOOD = 'comfort'; MOODT = performance.now(); return f(...a); }; }
+function pickFace(html){
+  if (MOOD && performance.now() - MOODT < 1200) return MOOD;
+  return /\?/.test(html.replace(/<[^>]+>/g, '')) ? 'think' : 'explain';
+}
+function setFace(f){ const im = $('face'); if (im && !im.src.endsWith(faceSrc(f))) im.src = faceSrc(f); }
+$('startParrot').innerHTML = `<img src="img/char/scene_start.webp" alt="채원과 루퍼드">`;
+// 종이결: 작은 무늬를 한 번만 만들어 바탕에 깔기 (움직일 때 다시 그리지 않음)
+(function paper(){
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 180; const x = c.getContext('2d'), im = x.createImageData(180, 180);
+    for (let i=0;i<im.data.length;i+=4){ const v = 110 + Math.random()*100; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = Math.random() < .5 ? 12 : 0; }
+    x.putImageData(im, 0, 0);
+    document.body.style.setProperty('--paper', `url(${c.toDataURL()})`); document.body.classList.add('paper');
+  } catch(e){}
+})();
 /* ---------- 상단 공용 버튼 ---------- */
 $('bSound').onclick = ()=>{ SOUND = !SOUND; $('bSound').textContent = SOUND ? '🔊' : '🔇'; unlockAudio(); };

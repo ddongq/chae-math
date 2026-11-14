@@ -9,7 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;touch-action:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{
-  background:radial-gradient(circle at 80% 0%,#FFE9C9 0,#FFD7A8 45%,#F7B983 100%);
+  background-color:#F1E3C6;background-image:radial-gradient(circle at 80% 0%,rgba(255,250,238,.75) 0,rgba(255,250,238,0) 60%);
   font-family:ui-rounded,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
   color:var(--ink);
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
@@ -24,7 +24,7 @@ b{font-weight:800}
 /* ---------- 틀 ---------- */
 #screen{position:absolute;left:0;top:0;width:1280px;height:800px;z-index:1}
 #screen > *{position:absolute}
-.panel{position:absolute;background:#fff;border-radius:28px;box-shadow:0 6px 0 rgba(150,80,20,.18)}
+.panel{position:absolute;background:#FFFDF7;border-radius:28px;box-shadow:0 6px 0 rgba(120,80,40,.16)}
 .pL{left:30px;top:80px;width:740px;height:565px}
 .pR{left:790px;top:80px;width:460px;height:565px}
 .pFull{left:30px;top:80px;width:1220px;height:565px}
@@ -48,9 +48,11 @@ body:not(.lesson-mode) .lt{display:none}
 .hbtn.on{background:#FFE08A}
 #bottom{position:absolute;left:30px;top:658px;width:1220px;height:130px;z-index:5}
 #parrot{position:absolute;left:0;top:0;width:120px;height:130px}
-#parrot.talk svg{animation:bob .5s ease-in-out 3}
+#parrot img{position:absolute;left:-10px;top:-12px;width:140px;height:140px;transform-origin:50% 100%}
+#parrot.talk img{animation:talk .6s ease-in-out 2}
+@keyframes talk{0%,100%{transform:rotate(0)}50%{transform:rotate(-2deg) translateY(-2px)}}
 @keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
-#pname{position:absolute;left:34px;top:110px;font-size:15px;font-weight:800;color:#fff;background:#2E9E5B;border-radius:10px;padding:1px 10px}
+#pname{position:absolute;left:60px;top:110px;transform:translateX(-50%);font-size:15px;font-weight:800;color:#fff;background:#8A4B12;border-radius:10px;padding:1px 10px;white-space:nowrap}
 #bubble{position:absolute;left:135px;top:4px;width:735px;height:120px;background:#fff;border-radius:24px;padding:10px 24px;font-size:23px;line-height:1.38;font-weight:600;box-shadow:0 5px 0 rgba(150,80,20,.18);display:flex;align-items:center}
 #bubble:before{content:"";position:absolute;left:-16px;top:44px;border:12px solid transparent;border-right:18px solid #fff;border-left:none}
 #bottom.wide #bubble{width:1085px}
@@ -174,7 +176,7 @@ body:not(.lesson-mode) .lt{display:none}
 
 /* ---------- 지도 ---------- */
 .sea{left:30px;top:80px;width:1220px;height:565px;border-radius:28px;overflow:hidden;
-  background:radial-gradient(circle at 30% 20%,#8FD8F2 0,#4FB3E0 45%,#2C8BC9 100%);box-shadow:0 6px 0 rgba(20,60,120,.25)}
+  background:radial-gradient(circle at 30% 20%,#A9DCE9 0,#79BFD6 50%,#5AA3C2 100%);box-shadow:0 6px 0 rgba(40,70,100,.22)}
 .wave{position:absolute;color:rgba(255,255,255,.45);font-size:26px;font-weight:900}
 .isl{position:absolute;width:170px;height:170px;margin:-85px 0 0 -85px;border:none;background:none;cursor:pointer;padding:0}
 .isl .land{position:absolute;left:10px;top:28px;width:150px;height:110px;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 50% 35%,#FFE7A8 0,#F5C66B 60%,#D99A3E 100%);box-shadow:0 8px 0 rgba(0,40,80,.25)}
@@ -239,13 +241,13 @@ body:not(.lesson-mode) .lt{display:none}
 .ptip{font-size:16px;line-height:1.55;color:#5A4A3A}
 
 /* ---------- 시작 / 회전 안내 ---------- */
-#start{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#FFF1D9,#FFC98F)}
+#start{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#FFF8EA,#EED9B4)}
 #start h1{font-size:54px;font-weight:900;margin-top:10px}
 #start h2{font-size:24px;font-weight:800;color:#9A5B1E;margin-top:10px}
 #start p{font-size:20px;color:#7A5A3A;margin-top:18px;text-align:center;line-height:1.6}
 #go{margin-top:30px;height:84px;padding:0 60px;border-radius:42px;border:none;background:var(--red);color:#fff;font-size:34px;font-weight:900;box-shadow:0 6px 0 #A82A2E;cursor:pointer}
 #rename{margin-top:16px;background:none;border:none;font-size:17px;color:#9A5B1E;text-decoration:underline;cursor:pointer}
-#rotate{display:none;position:fixed;inset:0;z-index:99;background:#FFD7A8;align-items:center;justify-content:center;flex-direction:column;font-size:28px;font-weight:800;color:var(--brown);text-align:center;gap:14px;font-family:inherit}
+#rotate{display:none;position:fixed;inset:0;z-index:99;background:#F1E3C6;align-items:center;justify-content:center;flex-direction:column;font-size:28px;font-weight:800;color:var(--brown);text-align:center;gap:14px;font-family:inherit}
 @media (orientation:portrait){#rotate{display:flex}}
 
 /* 보물상자: 오른쪽 상자 + 왼쪽 계산 공간 */
@@ -376,3 +378,7 @@ body:not(.lesson-mode) .lt{display:none}
 /* 확대됐을 때: 손가락으로 오므려 되돌릴 수 있게 + 원래대로 버튼 */
 html.zoomed, html.zoomed body, html.zoomed button{touch-action:manipulation}
 #unzoom{display:none;position:fixed;z-index:200;transform-origin:50% 0;height:56px;padding:0 24px;border-radius:28px;border:none;background:var(--red);color:#fff;font-family:inherit;font-size:22px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;cursor:pointer}
+
+/* 종이결 (engine.js에서 한 번 만든 그림을 배경으로) */
+body.paper{background-image:var(--paper),radial-gradient(circle at 80% 0%,rgba(255,250,238,.75) 0,rgba(255,250,238,0) 60%)}
+#startParrot img{display:block;height:250px;width:auto}
