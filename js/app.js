@@ -115,8 +115,8 @@ function openMap(opt={}){
   const allDone = SEAD().list.every(n=>Store.isl(n).treasure);
   say(allDone ? `{n} 대장님, 모든 섬을 정복했어! 👑 복습하고 싶은 섬을 골라 봐.`
               : `{n} 대장님, 오늘은 <b>${dayOf(cur)}일차 ${ISL[cur].name}</b>${J(ISL[cur].name,'을','를')} 탐험할 차례야! 섬을 눌러 출발!`);
-  if (Store.sea === 'div' && !Store.d.divGate) showDivGate();   // '출발'을 눌러야 본 것으로 저장
   setCtrls(btn('pill nudge', allDone ? '👑 인증서 보기' : `${ISL[cur].icon} 출발!`, ()=> allDone ? showCert() : openIsland(cur)));
+  if (Store.sea === 'div' && !Store.d.divGate) showDivGate();   // 지도 버튼 다음에 띄워야 환영 화면 버튼이 남는다 (버튼을 눌러야 본 것으로 저장)
 }
 
 /* ---------- 섬 ---------- */
@@ -189,7 +189,11 @@ function showDivGate(){
   const g = mk('ovbg gate', null, null, `<img src="img/char/scene_division_gate.webp" alt=""><div><div class="ovmsg">나눗셈 바다에 온 걸 환영해!</div>
     <div class="ovsub">똑같이 나누는 섬 8개가 기다리고 있어.<br>첫 섬은 <b>🍬 사탕 섬</b>이야.</div></div>`, null, ovEl);
   say(`여기는 <b>나눗셈 바다</b>! 곱셈을 거꾸로 하면 나눗셈이야. 루퍼드랑 하나씩 똑같이 나눠 보자.`, 'hello');
-  setCtrls(btn('pill nudge', '⛵ 출발!', ()=>{ Store.d.divGate = true; Store.save(); ovEl.innerHTML = ''; openIsland(currentIsland()); }));
+  // 환영 화면에서도 진도와 상관없이 시험 등대·지도로 갈 수 있게
+  const seen = () => { Store.d.divGate = true; Store.save(); ovEl.innerHTML = ''; };
+  setCtrls(btn('pill w sm', '🗺 지도 보기', ()=>{ seen(); openMap(); }),
+           btn('pill w sm', '🗼 시험 등대', ()=>{ seen(); openTower(); }),
+           btn('pill nudge', '⛵ 출발!', ()=>{ seen(); openIsland(currentIsland()); }));
 }
 
 /* ---------- 보물상자 ---------- */
