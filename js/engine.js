@@ -91,11 +91,28 @@ function safe(fn){ return (...args) => { try { const p = fn(...args); if (p && p
 
 /* ---------- 효과음 (기기에서 바로 합성) ---------- */
 let ac = null, SOUND = true;
+/* 아이패드 사파리는 화면이 꺼지거나 다른 앱에 다녀오면 소리 장치를 'interrupted'(중단)로 바꾼다.
+   'suspended'만 보고 다시 켜면 그 뒤로 소리가 영영 안 난다 → running이 아니면 무조건 다시 켜고,
+   다시 켜지지 않으면 새로 만든다. 다시 켤 때 무음 한 조각을 틀어야 iOS가 확실히 소리를 연다. */
 function unlockAudio(){
-  try { if (!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); if (ac.state==='suspended') ac.resume(); } catch(e){}
+  try {
+    if (ac && ac.state === 'closed') ac = null;
+    if (!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+    if (ac.state !== 'running'){
+      const old = ac;
+      const p = ac.resume();
+      if (p && p.catch) p.catch(()=>{ if (ac === old){ try{ old.close(); }catch(e){} ac = null; } });
+    }
+    const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource();
+    s.buffer = b; s.connect(ac.destination); s.start(0);
+  } catch(e){ ac = null; }
 }
+// 화면 어디를 눌러도(판, 보기 카드, 그림판 포함) 소리 장치를 깨운다
+['pointerdown', 'touchend', 'click'].forEach(t => document.addEventListener(t, ()=>{ if (!ac || ac.state !== 'running') unlockAudio(); }, {capture:true, passive:true}));
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden && ac && ac.state !== 'running'){ try{ ac.resume(); }catch(e){} } });
 function tone(f, dur, type='sine', vol=.2, when=0, fEnd){
   if (!SOUND || INSTANT || !ac) return;
+  if (ac.state !== 'running'){ try{ ac.resume(); }catch(e){} }
   const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
   o.type = type; o.frequency.setValueAtTime(f, t);
   if (fEnd) o.frequency.exponentialRampToValueAtTime(fEnd, t+dur);
