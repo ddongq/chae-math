@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="과학 놀이터">
+<meta name="theme-color" content="#1b1814">
+<title>과학 놀이터</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+@font-face{font-family:'Gowun Batang';font-weight:400;font-display:swap;src:url(font/GowunBatang-400.woff2) format('woff2')}
+@font-face{font-family:'Gowun Batang';font-weight:700;font-display:swap;src:url(font/GowunBatang-700.woff2) format('woff2')}
+@font-face{font-family:'Noto Sans KR';font-weight:400;font-display:swap;src:url(font/NotoSansKR-400.woff2) format('woff2')}
+@font-face{font-family:'Noto Sans KR';font-weight:500;font-display:swap;src:url(font/NotoSansKR-500.woff2) format('woff2')}
+:root{
+  --bg:#1b1814; --bg2:#26211b; --paper:#f1ead9; --paper-2:#d9cfb8; --ink:#2a2119; --muted:#a99c84;
+  --line:rgba(241,234,217,.14);
+  --serif:'Gowun Batang','Nanum Myeongjo',serif;
+  --sans:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--paper);font-family:var(--sans);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(1200px 700px at 80% -10%, rgba(201,154,60,.13), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(31,106,114,.16), transparent 60%),
+    var(--bg);
+  min-height:100vh;min-height:100dvh;
+  padding:calc(env(safe-area-inset-top,0px) + 40px) calc(env(safe-area-inset-right,0px) + 40px) calc(env(safe-area-inset-bottom,0px) + 32px) calc(env(safe-area-inset-left,0px) + 40px);
+}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px;min-height:calc(100dvh - 72px)}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.kicker{font-size:13px;letter-spacing:.24em;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,5vw,52px);margin:0;letter-spacing:.04em;line-height:1.1}
+.sub{margin:12px 0 0;color:#cfc4ad;font-size:16px;line-height:1.6}
+.status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;white-space:nowrap}
+.status i{width:8px;height:8px;border-radius:50%;background:#7a6f5c;display:inline-block}
+.status.ok i{background:#7fb069;box-shadow:0 0 0 4px rgba(127,176,105,.18)}
+.status.busy i{background:#d9a632;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.card{position:relative;display:flex;flex-direction:column;text-decoration:none;color:var(--ink);background:var(--paper);
+  border-radius:20px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 18px 40px -18px rgba(0,0,0,.7);
+  transition:transform .18s ease, box-shadow .18s ease}
+.card:active{transform:scale(.98)}
+@media (hover:hover){.card:hover{transform:translateY(-3px);box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 26px 50px -18px rgba(0,0,0,.8)}}
+.pic{position:relative;aspect-ratio:16/8.4;overflow:hidden;background:#2b251e}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.pic::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(to top,rgba(241,234,217,.95),transparent)}
+.body{padding:2px 22px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+.unit{font-size:12px;letter-spacing:.16em;color:#7d6f59;display:flex;align-items:center;gap:8px}
+.unit b{width:10px;height:10px;border-radius:3px;display:inline-block}
+.title{font-family:var(--serif);font-weight:700;font-size:26px;margin:2px 0 0}
+.desc{font-size:14px;line-height:1.6;color:#5a4d3e;margin:0}
+.go{margin-top:auto;padding-top:12px;display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#5a4d3e}
+.go span:last-child{font-weight:500;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.go svg{width:18px;height:18px}
+.best{font-size:13px;color:#7d6f59}
+footer{margin-top:auto;font-size:13px;line-height:1.7;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.install{display:none;background:rgba(241,234,217,.07);border:1px solid var(--line);border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.6;color:#e5dcc7}
+.install.show{display:block}
+.install svg{width:16px;height:16px;vertical-align:-3px}
+@media (max-width:720px){
+  body{padding-left:calc(env(safe-area-inset-left,0px) + 16px);padding-right:calc(env(safe-area-inset-right,0px) + 16px)}
+  .grid{grid-template-columns:1fr}
+}
+@media (orientation:landscape) and (min-width:900px){
+  body{padding-top:calc(env(safe-area-inset-top,0px) + 26px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}
+  .wrap{height:calc(100dvh - 44px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:0;gap:18px}
+  h1{font-size:40px}.sub{margin-top:8px;font-size:15px}.kicker{margin-bottom:6px}
+  .grid{flex:1;min-height:0;grid-template-rows:1fr 1fr;gap:18px}
+  .pic{aspect-ratio:auto;flex:1;min-height:0}
+  .body{flex:0 0 auto;padding-bottom:16px}
+  .title{font-size:23px}
+  .desc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .go{padding-top:6px}
+  footer{margin-top:0;padding-top:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="kicker">초등 3학년 과학</p>
+      <h1>과학 놀이터</h1>
+      <p class="sub">손으로 만지고, 귀로 듣고, 눈으로 지켜보는 네 가지 실험실</p>
+    </div>
+    <div class="status" id="status"><i></i><span>확인하는 중</span></div>
+  </header>
+
+  <div class="install" id="install">
+    아이패드에 앱처럼 설치하려면 Safari 아래쪽(또는 위쪽)의
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+    공유 단추를 누르고 <b>홈 화면에 추가</b>를 고르세요. 한 번 열어 두면 인터넷 없이도 실행돼요.
+  </div>
+
+  <main class="grid" id="grid"></main>
+
+  <footer>
+    <span>게임 안에서 오른쪽 아래 작은 단추를 누르면 이 목록으로 돌아와요.</span>
+    <span>소리를 켜고 해 보세요</span>
+  </footer>
+</div>
+
+<script>
+const GAMES = [
+  { id:'magnet', file:'games/magnet.html', title:'자석 정원', unit:'자석의 이용', color:'#c8352b',
+    desc:'자석으로 쇠구슬과 수레를 끌고 밀어 정원을 되살려요. 극의 성질과 나침반을 배워요.', key:'magnet-garden-v1' },
+  { id:'river', file:'games/river.html', title:'꼬마 강 연구소', unit:'지표의 변화', color:'#1f6a72',
+    desc:'흙을 파고 쌓고 비를 내려요. 흐르는 물이 땅을 어떻게 깎고 쌓는지 지켜봐요.', key:'kkoma-river-lab-v1' },
+  { id:'butterfly', file:'games/butterfly.html', title:'배추흰나비 키우기', unit:'동물의 한살이', color:'#d9a632',
+    desc:'알에서 애벌레, 번데기, 나비가 되기까지. 먹이를 주고 관찰 일지를 써요.', key:'baechu-nabi-save-v1' },
+  { id:'sound', file:'games/sound.html', title:'소리 마을 악단', unit:'소리의 성질', color:'#a4472f',
+    desc:'북, 가야금, 대금, 물병 실로폰으로 소리의 세기와 높낮이, 전달을 실험해요.', key:'sori-maeul-v1' },
+];
+const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>';
+const grid = document.getElementById('grid');
+for (const g of GAMES) {
+  let played = false;
+  try { played = !!localStorage.getItem(g.key); } catch (e) {}
+  const a = document.createElement('a');
+  a.className = 'card'; a.href = g.file;
+  a.innerHTML = `<div class="pic"><img src="img/${g.id}.jpg" alt=""></div>
+    <div class="body">
+      <div class="unit"><b style="background:${g.color}"></b>${g.unit}</div>
+      <h2 class="title">${g.title}</h2>
+      <p class="desc">${g.desc}</p>
+      <div class="go"><span class="best">${played ? '이어서 하기' : '처음 시작'}</span><span>들어가기 ${arrow}</span></div>
+    </div>`;
+  grid.appendChild(a);
+}
+
+// 홈 화면 설치 안내 (Safari에서 열었을 때만)
+const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (ios && !standalone) document.getElementById('install').classList.add('show');
+
+// 오프라인 준비 상태
+const st = document.getElementById('status');
+function setStatus(cls, text){ st.className = 'status ' + cls; st.lastElementChild.textContent = text; }
+if (!('serviceWorker' in navigator)) setStatus('', '오프라인 저장을 지원하지 않는 브라우저');
+else {
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'progress') setStatus('busy', `내려받는 중 ${e.data.done}/${e.data.total}`);
+    if (e.data && e.data.type === 'ready') setStatus('ok', '인터넷 없이 실행 가능');
+  });
+  navigator.serviceWorker.register('sw.js').then(async () => {
+    await navigator.serviceWorker.ready;
+    check();
+  }).catch(() => setStatus('', '오프라인 저장 실패: 인터넷 연결 후 다시 열어 주세요'));
+}
+function CACHE_NAME_HINT(){ return 'science-pwa-v1'; }
+async function check(){
+  try {
+    const c = await caches.open(CACHE_NAME_HINT());
+    const keys = await c.keys();
+    const need = ['games/magnet.html','games/river.html','games/butterfly.html','games/sound.html'];
+    const have = need.every(n => keys.some(k => k.url.endsWith(n)));
+    if (have) setStatus('ok', '인터넷 없이 실행 가능');
+    else { setStatus('busy', '내려받는 중'); setTimeout(check, 1500); }
+  } catch (e) { setStatus('', '확인할 수 없음'); }
+}
+</script>
+</body>
+</html>
